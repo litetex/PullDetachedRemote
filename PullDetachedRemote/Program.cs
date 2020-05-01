@@ -24,6 +24,7 @@ namespace PullDetachedRemote
          }));
          InitLog();
 
+         // TODO
          //#if !DEBUG
          try
          {
@@ -32,6 +33,7 @@ namespace PullDetachedRemote
             Parser.Default.ParseArguments<CmdOption>(args)
                      .WithParsed((opt) =>
                      {
+                        // TODO
                         var starter = new StartUp(opt);
                         starter.Start();
                      })
