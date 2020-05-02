@@ -56,7 +56,7 @@ namespace PullDetachedRemote
          }
          catch (Exception ex)
          {
-            InitLog(li => li.Config.WriteFile = true);
+            InitLog();
             Log.Fatal(ex);
          }
          //#endif

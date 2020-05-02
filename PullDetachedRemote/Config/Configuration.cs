@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote.Config
 {
@@ -25,14 +25,14 @@ namespace PullDetachedRemote.Config
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
-      /// Detached remote repository that should be used
+      /// Required; Detached remote repository that should be used
       /// </summary>
       public string DetachedRepo { get; set; }
 
       /// <summary>
-      /// Detached remote branch that should be used
+      /// Detached remote branch that should be used, default is the default branch of the detached repo
       /// </summary>
-      public string DetachedBranch { get; set; } = "master";
+      public string DetachedBranch { get; set; } 
 
       /// <summary>
       /// Optional; Name of the Branch that is used for merging / PullRequest
@@ -47,7 +47,7 @@ namespace PullDetachedRemote.Config
       ///  - Environment
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
-      [JsonIgnore]
+      [YamlIgnore]
       public string GitHubToken { get; set; } = null;
 
       /// <summary>
@@ -63,7 +63,7 @@ namespace PullDetachedRemote.Config
       ///  - Commandline TODO
       ///  - Environment
       /// </summary>
-      [JsonIgnore]
+      [YamlIgnore]
       public string DetachedCredsPrinicipal { get; set; } = null;
 
       /// <summary>
@@ -74,7 +74,7 @@ namespace PullDetachedRemote.Config
       ///  - Commandline TODO
       ///  - Environment
       /// </summary>
-      [JsonIgnore]
+      [YamlIgnore]
       public string DetachedCredsPassword { get; set; } = null;
 
    }

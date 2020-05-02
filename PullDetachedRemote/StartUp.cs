@@ -33,13 +33,13 @@ namespace PullDetachedRemote
 
             FillSampleData();
 
-            WriteJsonConfig();
+            WriteConfig();
             return;
          }
 
          Log.Info("MODE: Normal start");
          if (CmdOption.ConfigPath != null)
-            ReadJsonConfig();
+            ReadConfig();
 
          ReadCMDConfig();
 
@@ -53,7 +53,7 @@ namespace PullDetachedRemote
          // TODO?
       }
 
-      protected void WriteJsonConfig()
+      protected void WriteConfig()
       {
          Log.Info("Writing json config");
 
@@ -66,7 +66,7 @@ namespace PullDetachedRemote
          Log.Info($"Saving: success");
       }
 
-      protected void ReadJsonConfig()
+      protected void ReadConfig()
       {
          Log.Info("Reading json config");
 
@@ -82,6 +82,22 @@ namespace PullDetachedRemote
       protected void ReadCMDConfig()
       {
          Log.Info("Doing config over commandline-args");
+
+         if (!string.IsNullOrWhiteSpace(CmdOption.GITHUB_TOKEN))
+         {
+            Log.Info($"SetInp: {nameof(Config.GitHubToken)}='****'");
+            Config.GitHubToken = CmdOption.GITHUB_TOKEN;
+         }
+         if (!string.IsNullOrWhiteSpace(CmdOption.DETACHED_CREDS_PRINCIPAL))
+         {
+            Log.Info($"SetInp: {nameof(Config.DetachedCredsPrinicipal)}='****'");
+            Config.DetachedCredsPrinicipal = CmdOption.DETACHED_CREDS_PRINCIPAL;
+         }
+         if (!string.IsNullOrWhiteSpace(CmdOption.DETACHED_CREDS_PW))
+         {
+            Log.Info($"SetInp: {nameof(Config.DetachedCredsPassword)}='****'");
+            Config.DetachedCredsPassword = CmdOption.DETACHED_CREDS_PW;
+         }
 
       }
 
