@@ -30,9 +30,9 @@ namespace PullDetachedRemote.Config
       public string DetachedRepo { get; set; }
 
       /// <summary>
-      /// Detached remote branch that should be used, default is the default branch of the detached repo
+      /// Detached remote branch that should be used
       /// </summary>
-      public string DetachedBranch { get; set; } 
+      public string DetachedBranch { get; set; }
 
       /// <summary>
       /// Optional; Name of the Branch that is used for merging / PullRequest
