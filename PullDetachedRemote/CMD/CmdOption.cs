@@ -17,5 +17,10 @@ namespace PullDetachedRemote.CMD
       [Option("genconf", HelpText = "generates default config YML in mentioned path")]
       public string ConfigGenerationPath { get; set; } = null;
       #endregion JSON based Config
+
+      #region SetableBuildProperties
+      [Option('g', "GITHUB_TOKEN", HelpText = "GITHUB_TOKEN")]
+      public string GITHUB_TOKEN { get; set; } = null;
+      #endregion SetableBuildProperties
    }
 }
