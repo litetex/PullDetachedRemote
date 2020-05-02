@@ -34,7 +34,6 @@ namespace PullDetachedRemote
             Parser.Default.ParseArguments<CmdOption>(args)
                      .WithParsed((opt) =>
                      {
-                        // TODO
                         var starter = new StartUp(opt);
                         starter.Start();
                      })
