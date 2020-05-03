@@ -115,31 +115,39 @@ namespace PullDetachedRemote
             Log.Info($"Will fetch upstream-remote with custom credentials");
          }
 
-         Commands.Fetch(repo, UpstreamRemoteName, repo.Network.Remotes[UpstreamRemoteName].FetchRefSpecs.Select(x => x.Specification), fetchOptions, "");
+         // TODO: Don't fetch all!
+         Commands.Fetch(
+            repo, 
+            UpstreamRemoteName, 
+            repo.Network.Remotes[UpstreamRemoteName]
+               .FetchRefSpecs
+               .Select(x => x.Specification), 
+            fetchOptions, 
+            "");
          Log.Info($"Fetched upstream-remote successful");
 
-         var localBranchName = GenerateLocalBranchname(repo.Branches.Select(x => x.CanonicalName), Config.NameOfOriginUpdateBranch);
-         Log.Info($"Creating new local-update branch '{localBranchName}'");
-         var localUpdateBranch = repo.CreateBranch(localBranchName);
-         Log.Info($"Created new local-update branch '{localUpdateBranch.CanonicalName}'[LatestCommit='{localUpdateBranch.Commits.Last()}']");
+         //var localBranchName = GenerateLocalBranchname(repo.Branches.Select(x => x.CanonicalName), Config.NameOfOriginUpdateBranch);
+         //Log.Info($"Creating new local-update branch '{localBranchName}'");
+         //var localUpdateBranch = repo.CreateBranch(localBranchName);
+         //Log.Info($"Created new local-update branch '{localUpdateBranch.CanonicalName}'[LatestCommit='{localUpdateBranch.Commits.Last()}']");
 
-         Commands.Checkout(repo, localUpdateBranch);
-         Log.Info($"Checked out local-update branch aka '{localBranchName}'");
+         //Commands.Checkout(repo, localUpdateBranch);
+         //Log.Info($"Checked out local-update branch aka '{localBranchName}'");
 
          var upstreamBranch = repo.Branches.First(b => b.CanonicalName == $"{UpstreamRemoteName}/{Config.DetachedBranch}");
 
-         Log.Info($"Merging upstream-remote branch '{upstreamBranch.CanonicalName}'->'{localUpdateBranch.CanonicalName}'");
-         var mergeresult = repo.Merge(upstreamBranch, new Signature(id,DateTimeOffset.Now));
-         Log.Info($"Merged upstream-remote branch into local-update branch; Status='{mergeresult.Status}', Commit='{mergeresult.Commit}'");
+         //Log.Info($"Merging upstream-remote branch '{upstreamBranch.CanonicalName}'->'{localUpdateBranch.CanonicalName}'");
+         //var mergeresult = repo.Merge(upstreamBranch, new Signature(id,DateTimeOffset.Now));
+         //Log.Info($"Merged upstream-remote branch into local-update branch; Status='{mergeresult.Status}', Commit='{mergeresult.Commit}'");
 
-         if(mergeresult.Status == MergeStatus.UpToDate)
-         {
-            Log.Info("Merge was up-to-date");
-            // TODO
-            return;
-         }
+         //if(mergeresult.Status == MergeStatus.UpToDate)
+         //{
+         //   Log.Info("Merge was up-to-date");
+         //   // TODO
+         //   return;
+         //}
 
-         var originUpdateBranchCreated = false;
+         var createdOriginUpdateBranch = false;
 
          var originUpdateBranch = repo.Branches.FirstOrDefault(x => x.CanonicalName == Config.NameOfOriginUpdateBranch);
          if (originUpdateBranch != null)
@@ -147,36 +155,48 @@ namespace PullDetachedRemote
             var remoteOrigin = repo.Network.Remotes["origin"];
             var remoteOriginRefSpecs = remoteOrigin.FetchRefSpecs.Select(x => x.Specification);
             Log.Info("Fetching origin");
+            // TODO: Don't fetch all!
             Commands.Fetch(repo, remoteOrigin.Name, remoteOriginRefSpecs, new FetchOptions() { CredentialsProvider = githubCredHandler }, "");
             Log.Info("Fetched origin");
          }
          else
          {
-            originUpdateBranchCreated = true;
             Log.Info($"Creating new origin-update branch '{Config.NameOfOriginUpdateBranch}'");
             originUpdateBranch = repo.CreateBranch(Config.NameOfOriginUpdateBranch);
             Log.Info($"Created new origin-update branch '{originUpdateBranch.CanonicalName}'[LatestCommit='{originUpdateBranch.Commits.Last()}']");
+
+            createdOriginUpdateBranch = true;
          }
 
-         //Commands.Checkout(repo, originUpdateBranch);
-         //Log.Info($"Checked out '{originUpdateBranch}'");
+         Commands.Checkout(repo, originUpdateBranch);
+         Log.Info($"Checked out origin-update branch '{originUpdateBranch.CanonicalName}'");
 
-         Log.Info($"Comparing local-update branch[Commit='{mergeresult.Commit}'] and origin-update branch[Commit='{originUpdateBranch.Commits.Last()}']");
-         if(originUpdateBranch.Commits.Last() == mergeresult.Commit)
+         Log.Info($"Checking if upstream-remote branch upstream-remote branch has newer commits than origin-update branch '{originUpdateBranch.CanonicalName}'");
+         var upstreamOriginCommitLog = repo.Commits.QueryBy(new CommitFilter()
          {
-            Log.Info("Commits are equal");
-            // TODO
-            if(originUpdateBranchCreated)
-            {
-               // PUSH AND CREATE PR
-            }
-
-
+            ExcludeReachableFrom = originUpdateBranch,
+            IncludeReachableFrom = upstreamBranch,
+         });
+         if (upstreamOriginCommitLog.Any())
+         {
+            Log.Info($"No new commits on upstream-remote branch '{upstreamBranch.CanonicalName}'");
+            //TODO
             return;
          }
-         Log.Info("Commits are not equal; Overriding existing origin-update branch");
+         Log.Info($"Detected {upstreamOriginCommitLog.Count()} new commits on upstream-remote branch {upstreamBranch.CanonicalName}':");
+         foreach (var commit in upstreamOriginCommitLog)
+            Log.Info($"{commit.Sha} | {commit.Message}");
 
-         repo.Branches.
+         Log.Info($"Rebasing origin-update branch '{originUpdateBranch.CanonicalName}' from upstream-remote branch '{upstreamBranch.CanonicalName}'");
+         var rebaseResult = repo.Rebase.Start(originUpdateBranch, upstreamBranch, null, id, new RebaseOptions());
+         if (rebaseResult.Status != RebaseStatus.Complete)
+         {
+            repo.Rebase.Abort();
+            // TODO
+            // Handle failure!
+            return;
+         }
+         Log.Info($"Rebasing['{upstreamBranch.CanonicalName}'->'{originUpdateBranch.CanonicalName}'] successful: Completed {rebaseResult.CompletedStepCount} steps");
 
 
       }
@@ -192,15 +212,5 @@ namespace PullDetachedRemote
 
          throw new InvalidOperationException($"Could not generate remote upstream name for {preferedName} within {maxtries} times");
       }
-
-      private string GenerateLocalBranchname(IEnumerable<string> existingBranches, string prefixPath, string namePrefix = "lworking-", int maxtries = 1000)
-      {
-         for (int i = 0; i < maxtries; i++)
-            if (!existingBranches.Contains($"{prefixPath}/{namePrefix}-{i}"))
-               return $"{prefixPath}/{namePrefix}-{i}";
-         throw new InvalidOperationException($"Could not generate a local branch name for {prefixPath}/{namePrefix}-XXX within {maxtries} times");
-      }
-
-
    }
 }
