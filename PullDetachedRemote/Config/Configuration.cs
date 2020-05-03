@@ -8,13 +8,6 @@ namespace PullDetachedRemote.Config
    public class Configuration : YmlConfig
    {
       /// <summary>
-      /// Path to working repo; default = executable is in repo
-      /// </summary>
-      public string PathToWorkingRepo { get; set; } = null;
-
-      // TODO: Checkout working repo if not exists?
-
-      /// <summary>
       /// Email for commits, if not set "action@github.com"
       /// </summary>
       public string IdentityEmail { get; set; } = null;
@@ -23,6 +16,18 @@ namespace PullDetachedRemote.Config
       /// User for commits, if not set "GitHub Action - nameofThisProject Version"
       /// </summary>
       public string IdentityUsername { get; set; } = null;
+
+      /// <summary>
+      /// Path to working repo; default = executable is in repo
+      /// </summary>
+      public string PathToWorkingRepo { get; set; } = null;
+
+      // TODO: Checkout working repo if not exists?
+
+      /// <summary>
+      /// Branch of origin that should be used
+      /// </summary>
+      public string OriginBaseBranch { get; set; }
 
       /// <summary>
       /// Required; Detached remote repository that should be used

@@ -98,8 +98,11 @@ namespace PullDetachedRemote.Workflow
          var originUpdateBranch = Repo.Branches.FirstOrDefault(x => x.CanonicalName == Config.NameOfOriginUpdateBranch);
          if (originUpdateBranch == null)
          {
-            Log.Info($"Creating origin-update branch '{Config.NameOfOriginUpdateBranch}'");
-            originUpdateBranch = Repo.CreateBranch(Config.NameOfOriginUpdateBranch);
+            var originBaseBranch = Repo.Branches.FirstOrDefault(x => x.CanonicalName == $"origin/{Config.OriginBaseBranch}");
+            Log.Info($"Creating origin-update branch '{Config.NameOfOriginUpdateBranch}'{(originBaseBranch != null ? $" from '{originBaseBranch.CanonicalName}'" : "")}");
+            originUpdateBranch = originBaseBranch != null ? 
+               Repo.CreateBranch(Config.NameOfOriginUpdateBranch, originBaseBranch.Commits.Last()) :
+               Repo.CreateBranch(Config.NameOfOriginUpdateBranch);
             Log.Info($"Created origin-update branch '{originUpdateBranch.CanonicalName}'[LatestCommit='{originUpdateBranch.Commits.Last()}']");
 
             CreatedOriginUpdateBranch = true;
