@@ -57,8 +57,8 @@ namespace PullDetachedRemote.Workflow
       {
          var upstreamRemoteName = GenerateRemoteUpstreamName(Repo.Network.Remotes.Select(x => x.Name));
 
-         Repo.Network.Remotes.Add(upstreamRemoteName, Config.DetachedRepo);
-         Log.Info($"Using upstream-remote '{upstreamRemoteName}'<-'{Config.DetachedRepo}'");
+         Repo.Network.Remotes.Add(upstreamRemoteName, Config.BaseUpstreamRepo);
+         Log.Info($"Using upstream-remote '{upstreamRemoteName}'<-'{Config.BaseUpstreamRepo}'");
 
          FetchOptions fetchOptions = new FetchOptions()
          {
@@ -76,7 +76,7 @@ namespace PullDetachedRemote.Workflow
             "");
          Log.Info($"Fetched upstream-remote successfully");
 
-         UpstreamBranch = Repo.Branches.First(b => b.CanonicalName == $"{upstreamRemoteName}/{Config.DetachedBranch}");
+         UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{upstreamRemoteName}/{Config.BaseUpstreamBranch}");
       }
 
       protected string GenerateRemoteUpstreamName(IEnumerable<string> exisitingRemoteNames, string preferedName = "upstream", int maxtries = 1000)
@@ -95,26 +95,26 @@ namespace PullDetachedRemote.Workflow
       {
          CreatedOriginUpdateBranch = false;
 
-         var originUpdateBranch = Repo.Branches.FirstOrDefault(x => x.CanonicalName == Config.NameOfOriginUpdateBranch);
-         if (originUpdateBranch == null)
+         OriginUpdateBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == Config.NameOfOriginUpdateBranch);
+         if (OriginUpdateBranch == null)
          {
-            var originBaseBranch = Repo.Branches.FirstOrDefault(x => x.CanonicalName == $"origin/{Config.OriginBaseBranch}");
-            Log.Info($"Creating origin-update branch '{Config.NameOfOriginUpdateBranch}'{(originBaseBranch != null ? $" from '{originBaseBranch.CanonicalName}'" : "")}");
-            originUpdateBranch = originBaseBranch != null ? 
+            var originBaseBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == $"origin/{Config.OriginBaseBranch}");
+            Log.Info($"Creating origin-update branch '{Config.NameOfOriginUpdateBranch}'{(originBaseBranch != null ? $" from '{originBaseBranch.FriendlyName}'" : "")}");
+            OriginUpdateBranch = originBaseBranch != null ? 
                Repo.CreateBranch(Config.NameOfOriginUpdateBranch, originBaseBranch.Commits.Last()) :
                Repo.CreateBranch(Config.NameOfOriginUpdateBranch);
-            Log.Info($"Created origin-update branch '{originUpdateBranch.CanonicalName}'[LatestCommit='{originUpdateBranch.Commits.Last()}']");
+            Log.Info($"Created origin-update branch '{OriginUpdateBranch.FriendlyName}'[LatestCommit='{OriginUpdateBranch.Commits.Last()}']");
 
             CreatedOriginUpdateBranch = true;
          }
 
-         Commands.Checkout(Repo, originUpdateBranch);
-         Log.Info($"Checked out origin-update branch '{originUpdateBranch.CanonicalName}'");
+         Commands.Checkout(Repo, OriginUpdateBranch);
+         Log.Info($"Checked out origin-update branch '{OriginUpdateBranch.FriendlyName}'");
       }
 
       public bool CheckIfOriginUpdateBranchNeedsNewCommits()
       {
-         Log.Info($"Checking if upstream-remote branch upstream-remote branch has newer commits than origin-update branch '{OriginUpdateBranch.CanonicalName}'");
+         Log.Info($"Checking if upstream-remote branch upstream-remote branch has newer commits than origin-update branch '{OriginUpdateBranch.FriendlyName}'");
          var upstreamOriginCommitLog = Repo.Commits.QueryBy(new CommitFilter()
          {
             ExcludeReachableFrom = OriginUpdateBranch,
@@ -122,11 +122,11 @@ namespace PullDetachedRemote.Workflow
          });
          if (!upstreamOriginCommitLog.Any())
          {
-            Log.Info($"No new commits on upstream-remote branch '{UpstreamBranch.CanonicalName}'");
+            Log.Info($"No new commits on upstream-remote branch '{UpstreamBranch.FriendlyName}'");
             //TODO
             return false;
          }
-         Log.Info($"Detected {upstreamOriginCommitLog.Count()} new commits on upstream-remote branch {UpstreamBranch.CanonicalName}':");
+         Log.Info($"Detected {upstreamOriginCommitLog.Count()} new commits on upstream-remote branch {UpstreamBranch.FriendlyName}':");
          foreach (var commit in upstreamOriginCommitLog)
             Log.Info($"{commit.Sha} | {commit.Message}");
 
@@ -135,20 +135,21 @@ namespace PullDetachedRemote.Workflow
 
       public bool RebaseFromUpstream()
       {
-         Log.Info($"Rebasing origin-update branch '{OriginUpdateBranch.CanonicalName}' from upstream-remote branch '{UpstreamBranch.CanonicalName}'");
+         Log.Info($"Rebasing origin-update branch '{OriginUpdateBranch.FriendlyName}' from upstream-remote branch '{UpstreamBranch.FriendlyName}'");
          var rebaseResult = Repo.Rebase.Start(OriginUpdateBranch, UpstreamBranch, null, Identity, null);
          if (rebaseResult.Status != RebaseStatus.Complete)
          {
             Repo.Rebase.Abort();
             return false;
          }
-         Log.Info($"Rebasing['{UpstreamBranch.CanonicalName}'->'{OriginUpdateBranch.CanonicalName}'] successful: Completed {rebaseResult.CompletedStepCount} steps");
+         Log.Info($"Rebasing['{UpstreamBranch.FriendlyName}'->'{OriginUpdateBranch.FriendlyName}'] successful: Completed {rebaseResult.CompletedStepCount} steps");
          return true;
       }
 
       public void PushOriginUpdateBranch()
       {
-         Repo.Network.Push(OriginUpdateBranch, new PushOptions() { CredentialsProvider = OriginCredentialsHandler });
+         //TODO
+         //Repo.Network.Push(OriginUpdateBranch, new PushOptions() { CredentialsProvider = OriginCredentialsHandler });
       }
 
       public void Dispose()

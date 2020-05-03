@@ -108,8 +108,18 @@ namespace PullDetachedRemote
          var envGithubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
          if (!string.IsNullOrWhiteSpace(envGithubToken))
          {
-            Log.Info($"SetInp: {nameof(Config.GitHubToken)}='****'");
+            Log.Info($"SetEnv: {nameof(Config.GitHubToken)}='****'");
             Config.GitHubToken = envGithubToken;
+         }
+         if (!string.IsNullOrWhiteSpace(CmdOption.DETACHED_CREDS_PRINCIPAL))
+         {
+            Log.Info($"SetEnv: {nameof(Config.DetachedCredsPrinicipal)}='****'");
+            Config.DetachedCredsPrinicipal = CmdOption.DETACHED_CREDS_PRINCIPAL;
+         }
+         if (!string.IsNullOrWhiteSpace(CmdOption.DETACHED_CREDS_PW))
+         {
+            Log.Info($"SetEnv: {nameof(Config.DetachedCredsPassword)}='****'");
+            Config.DetachedCredsPassword = CmdOption.DETACHED_CREDS_PW;
          }
       }
 

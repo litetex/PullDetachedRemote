@@ -32,12 +32,12 @@ namespace PullDetachedRemote.Config
       /// <summary>
       /// Required; Detached remote repository that should be used
       /// </summary>
-      public string DetachedRepo { get; set; }
+      public string BaseUpstreamRepo { get; set; }
 
       /// <summary>
       /// Detached remote branch that should be used
       /// </summary>
-      public string DetachedBranch { get; set; }
+      public string BaseUpstreamBranch { get; set; }
 
       /// <summary>
       /// Optional; Name of the Branch that is used for merging / PullRequest

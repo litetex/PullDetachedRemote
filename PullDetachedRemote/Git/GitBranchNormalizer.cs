@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace PullDetachedRemote.Git
 {
+   //TODO DOES NOT WORK!!!
    /// <summary>
    /// Normalizes a value to a valid git Branch
    /// </summary>
@@ -26,13 +27,13 @@ namespace PullDetachedRemote.Git
          value = ReplaceAll(value, "./", "/");
          value = ReplaceAll(value, "..", ".");
          value = ReplaceAll(value, " ", "-");
-         value = ReplaceAll(value, new Regex(@"/^[~^:?*\\\-]/g"), "");
-         value = ReplaceAll(value, new Regex(@"/[~^:?*\\]/g"), "-");
-         value = ReplaceAll(value, new Regex(@"/[~^:?*\\\-]$/g"), "");
+         value = ReplaceAll(value, new Regex(@"^[~^:?*\\\-]"), "");
+         value = ReplaceAll(value, new Regex(@"[~^:?*\\]"), "-");
+         value = ReplaceAll(value, new Regex(@"[~^:?*\\\-]$"), "");
          value = ReplaceAll(value, "@{", "-");
-         value = ReplaceAll(value, new Regex(@"/\.$/g"), "");
-         value = ReplaceAll(value, new Regex(@" /\/$/g"), "");
-         value = ReplaceAll(value, new Regex(@"/\.lock$/g"), "");
+         value = ReplaceAll(value, new Regex(@"\.$"), "");
+         value = ReplaceAll(value, new Regex(@"\/$"), "");
+         value = ReplaceAll(value, new Regex(@"\.lock$"), "");
          return value;
       }
    }

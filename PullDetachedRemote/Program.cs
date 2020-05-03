@@ -27,38 +27,38 @@ namespace PullDetachedRemote
 
          // TODO
          //#if !DEBUG
-         try
-         {
-            new CrashDetector().Init();
-            //#endif
-            Parser.Default.ParseArguments<CmdOption>(args)
-                     .WithParsed((opt) =>
-                     {
-                        var starter = new StartUp(opt);
-                        starter.Start();
-                     })
-                     .WithNotParsed((ex) =>
-                     {
-                        if (ex.All(err =>
-                                new ErrorType[]
-                                {
+         //try
+         //{
+         new CrashDetector().Init();
+         //#endif
+         Parser.Default.ParseArguments<CmdOption>(args)
+                  .WithParsed((opt) =>
+                  {
+                     var starter = new StartUp(opt);
+                     starter.Start();
+                  })
+                  .WithNotParsed((ex) =>
+                  {
+                     if (ex.All(err =>
+                             new ErrorType[]
+                             {
                                  ErrorType.HelpRequestedError,
                                  ErrorType.HelpVerbRequestedError
-                                }.Contains(err.Tag))
-                          )
-                           return;
+                             }.Contains(err.Tag))
+                       )
+                        return;
 
-                        InitLog();
-                        foreach (var error in ex)
-                           Log.Error($"Failed to parse: {error.Tag}");
-                     });
-            //#if !DEBUG
-         }
-         catch (Exception ex)
-         {
-            InitLog();
-            Log.Fatal(ex);
-         }
+                     InitLog();
+                     foreach (var error in ex)
+                        Log.Error($"Failed to parse: {error.Tag}");
+                  });
+         //#if !DEBUG
+         //}
+         //catch (Exception ex)
+         //{
+         //   InitLog();
+         //   Log.Fatal(ex);
+         //}
          //#endif
       }
 

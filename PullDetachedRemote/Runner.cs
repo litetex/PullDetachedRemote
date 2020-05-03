@@ -41,14 +41,14 @@ namespace PullDetachedRemote
             throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
          //#endif
 
-         if (string.IsNullOrWhiteSpace(Config.DetachedRepo) && Uri.TryCreate(Config.DetachedRepo, UriKind.Absolute, out _))
-            throw new ArgumentException($"{nameof(Config.DetachedRepo)}[='{Config.DetachedRepo}'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.BaseUpstreamRepo) && Uri.TryCreate(Config.BaseUpstreamRepo, UriKind.Absolute, out _))
+            throw new ArgumentException($"{nameof(Config.BaseUpstreamRepo)}[='{Config.BaseUpstreamRepo}'] is invalid");
 
-         if (string.IsNullOrWhiteSpace(Config.DetachedBranch))
-            throw new ArgumentException($"{nameof(Config.DetachedBranch)}[='{Config.DetachedBranch}'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.BaseUpstreamBranch))
+            throw new ArgumentException($"{nameof(Config.BaseUpstreamBranch)}[='{Config.BaseUpstreamBranch}'] is invalid");
 
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            Config.NameOfOriginUpdateBranch = $"{Config.DetachedRepo}-{Config.DetachedBranch}";
+            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.BaseUpstreamRepo}-{Config.BaseUpstreamBranch}";
 
          Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Clean(Config.NameOfOriginUpdateBranch);
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
