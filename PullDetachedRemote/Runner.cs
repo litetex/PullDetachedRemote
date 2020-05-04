@@ -103,13 +103,22 @@ namespace PullDetachedRemote
 
             GitWorkflow.Init(originCredentialsHandler, upstreamCredentialsHandler);
 
-            GitWorkflow.CheckoutOriginUpdateBranch();
+            GitHubWorkflow.Init(GitWorkflow.OriginRemote);
 
-            var needsNewCommits = GitWorkflow.CheckIfOriginUpdateBranchNeedsNewCommits();
+            var createdBranch = GitWorkflow.CheckoutOriginUpdateBranch();
+
+            var needsNewCommits = GitWorkflow.HasUpstreamBranchNewCommitsForUpdateBranch();
+
+            var hasCommitsFromNonUpstream = GitWorkflow.HasUpdateBranchNewerCommitsThanUpstreamBranch();
+
+            if(needsNewCommits && hasCommitsFromNonUpstream)
+            {
+               Log.Warn("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
+            }
 
             if(needsNewCommits)
             {
-               var success = GitWorkflow.RebaseFromUpstream();
+               var success = GitWorkflow.UpdateBranchFromUpstream();
 
                if(!success)
                {

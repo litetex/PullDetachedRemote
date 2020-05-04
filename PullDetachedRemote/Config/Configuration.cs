@@ -25,11 +25,6 @@ namespace PullDetachedRemote.Config
       // TODO: Checkout working repo if not exists?
 
       /// <summary>
-      /// Branch of origin that should be used
-      /// </summary>
-      public string OriginBaseBranch { get; set; }
-
-      /// <summary>
       /// Required; Detached remote repository that should be used
       /// </summary>
       public string BaseUpstreamRepo { get; set; }
@@ -48,7 +43,7 @@ namespace PullDetachedRemote.Config
       /// GITHUB_TOKEN
       /// <para/>
       /// Config possible over:
-      ///  - Commandline TODO
+      ///  - Commandline
       ///  - Environment
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
@@ -65,7 +60,7 @@ namespace PullDetachedRemote.Config
       /// Username or token for detached/remote repo <para/>
       /// <para/>
       /// Config possible over:
-      ///  - Commandline TODO
+      ///  - Commandline
       ///  - Environment
       /// </summary>
       [YamlIgnore]
@@ -76,7 +71,7 @@ namespace PullDetachedRemote.Config
       /// Password for detached/remote repo
       /// <para/>
       /// Config possible over:
-      ///  - Commandline TODO
+      ///  - Commandline
       ///  - Environment
       /// </summary>
       [YamlIgnore]
