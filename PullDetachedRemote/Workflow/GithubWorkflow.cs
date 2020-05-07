@@ -95,7 +95,6 @@ namespace PullDetachedRemote.Workflow
       {
          try
          {
-
             var repo = Client.Repository.Get(owner, repoName).Result;
             if (!Validate(repo))
                return false;
@@ -115,9 +114,22 @@ namespace PullDetachedRemote.Workflow
       }
 
 
-      public void CreatePullRequest()
+      public void TryCreatePullRequest(string upstreamRepoUrl, string sourceBranchName)
       {
-         //Client.Repository.Get
+         var targetBranch = Repo.DefaultBranch;
+
+         var newPr = new NewPullRequest($"[UpstreamUpdate] from {upstreamRepoUrl}", sourceBranchName, targetBranch);
+
+         try
+         {
+            var pr = Client.PullRequest.Create(Repo.Id, newPr).Result;
+
+            Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranch}' Title='{pr.Title}'");
+         }
+         catch(Exception ex)
+         {
+            Log.Error("Unable to create a PR on Github, continuing anyway...", ex);
+         }
       }
 
       public void Dispose()

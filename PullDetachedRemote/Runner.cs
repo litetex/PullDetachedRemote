@@ -113,7 +113,7 @@ namespace PullDetachedRemote
 
             if(needsNewCommits && hasCommitsFromNonUpstream)
             {
-               Log.Warn("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
+               Log.Info("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
             }
 
             if(needsNewCommits)
@@ -126,22 +126,20 @@ namespace PullDetachedRemote
                }
             }
 
-            GitWorkflow.PushOriginUpdateBranch();
+            GitWorkflow.DetachUpstreamRemote();
 
-            //DoIt();
+            if(createdBranch || needsNewCommits)
+            {
+               Log.Info("Needs to be pushed");
+               GitWorkflow.PushOriginUpdateBranch();
+            }
+
+            if (createdBranch)
+               GitHubWorkflow.TryCreatePullRequest(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
          }
-
-         //Log.Info("All tasks successfully finished!");
 
          Log.Info("Finished run");
       }
-
-      protected void DoIt()
-      {
-
-         
-      }
-
       
    }
 }

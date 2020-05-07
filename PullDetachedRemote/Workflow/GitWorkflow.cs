@@ -19,9 +19,17 @@ namespace PullDetachedRemote.Workflow
 
       protected CredentialsHandler UpstreamCredentialsHandler { get; set; }
 
+      protected Remote UpstreamRemote { get; set; }
+
       protected Branch OriginUpdateBranch { get; set; }
 
       protected Branch UpstreamBranch { get; set; }
+
+      public string OriginRemote { get => Repo.Network.Remotes["origin"].PushUrl; }
+
+      public string UpstreamRepoUrl { get => UpstreamRemote.PushUrl; }
+
+      public string OriginUpdateBranchName { get => OriginUpdateBranch?.FriendlyName; }
 
 
       public GitWorkflow(Config.Configuration config)
@@ -54,23 +62,23 @@ namespace PullDetachedRemote.Workflow
 
       protected void InitUpstreamBranch()
       {
-         var upstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.BaseUpstreamRepo);
+         UpstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.BaseUpstreamRepo);
 
 
-         if (upstreamRemote != null)
+         if (UpstreamRemote != null)
          {
-            Log.Info($"Found already existing upstream remote '{upstreamRemote.Name}'/'{upstreamRemote.PushUrl}'");
+            Log.Info($"Found already existing upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
          }
          else
          {
             var upstreamRemoteName = GenerateRemoteUpstreamName(Repo.Network.Remotes.Select(x => x.Name));
-            upstreamRemote = Repo.Network.Remotes.Add(upstreamRemoteName, Config.BaseUpstreamRepo);
+            UpstreamRemote = Repo.Network.Remotes.Add(upstreamRemoteName, Config.BaseUpstreamRepo);
 
-            Log.Info($"Added upstream remote '{upstreamRemote.Name}'/'{upstreamRemote.PushUrl}'");
+            Log.Info($"Added upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
          }
 
          
-         Log.Info($"Using upstream-remote '{upstreamRemote.Name}'<-'{Config.BaseUpstreamRepo}'");
+         Log.Info($"Using upstream-remote '{UpstreamRemote.Name}'<-'{Config.BaseUpstreamRepo}'");
 
          FetchOptions fetchOptions = new FetchOptions()
          {
@@ -80,18 +88,16 @@ namespace PullDetachedRemote.Workflow
          // TODO: Don't fetch all!
          Commands.Fetch(
             Repo,
-            upstreamRemote.Name,
-            upstreamRemote
+            UpstreamRemote.Name,
+            UpstreamRemote
                .FetchRefSpecs
                .Select(x => x.Specification),
             fetchOptions,
             "");
          Log.Info($"Fetched upstream-remote successfully");
 
-         UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{upstreamRemote.Name}/{Config.BaseUpstreamBranch}");
+         UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{UpstreamRemote.Name}/{Config.BaseUpstreamBranch}");
       }
-
-      public string OriginRemote { get => Repo.Network.Remotes["origin"].PushUrl; }
 
       protected string GenerateRemoteUpstreamName(IEnumerable<string> exisitingRemoteNames, string preferedName = "upstream", int maxtries = 1000)
       {
@@ -181,15 +187,30 @@ namespace PullDetachedRemote.Workflow
          return true;
       }
 
+      public void DetachUpstreamRemote()
+      {
+         var toDetachremote = Repo.Network.Remotes.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
+         if(toDetachremote == null)
+         {
+            Log.Debug($"{nameof(UpstreamRemote)} is already removed");
+            return;
+         }
+
+         Repo.Network.Remotes.Remove(toDetachremote.Name);
+         Log.Info($"Removing {nameof(UpstreamRemote)} '{toDetachremote.Name}'");
+      }
+
       public void PushOriginUpdateBranch()
       {
-         //TODO
-         //Repo.Network.Push(OriginUpdateBranch, new PushOptions() { CredentialsProvider = OriginCredentialsHandler });
+         if (OriginUpdateBranch.RemoteName != null && OriginUpdateBranch.RemoteName != OriginRemote)
+            throw new ArgumentException($"Will not push: {nameof(OriginUpdateBranch)}.{nameof(OriginUpdateBranch.RemoteName)}'{OriginUpdateBranch.RemoteName}' != {nameof(OriginRemote)}{OriginRemote}");
+
+         Repo.Network.Push(OriginUpdateBranch, new PushOptions() { CredentialsProvider = OriginCredentialsHandler });
       }
 
       public void Dispose()
       {
-         
+         DetachUpstreamRemote();
       }
    }
 }
