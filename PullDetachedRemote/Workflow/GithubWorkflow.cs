@@ -114,22 +114,28 @@ namespace PullDetachedRemote.Workflow
       }
 
 
-      public void TryCreatePullRequest(string upstreamRepoUrl, string sourceBranchName)
+      public void EnsurePullRequestCreated(string upstreamRepoUrl, string sourceBranchName)
       {
-         var targetBranch = Repo.DefaultBranch;
+         var targetBranchname = Config.BaseOriginBranch ?? Repo.DefaultBranch;
 
-         var newPr = new NewPullRequest($"[UpstreamUpdate] from {upstreamRepoUrl}", sourceBranchName, targetBranch);
+         var existingPr = Client.PullRequest.GetAllForRepository(Repo.Id)
+            .Result
+            .FirstOrDefault(pr => 
+               pr.Base.Ref == targetBranchname && 
+               pr.Head.Ref == sourceBranchName);
 
-         try
+         if (existingPr != null)
          {
-            var pr = Client.PullRequest.Create(Repo.Id, newPr).Result;
+            Log.Info($"There is already a PullRequest for '{sourceBranchName}'->'{targetBranchname}'");
+            return;
+         }
 
-            Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranch}' Title='{pr.Title}'");
-         }
-         catch(Exception ex)
-         {
-            Log.Error("Unable to create a PR on Github, continuing anyway...", ex);
-         }
+         Log.Info($"Creating PullRequest '{sourceBranchName}'->'{targetBranchname}'");
+         var newPr = new NewPullRequest($"[UpstreamUpdate] from {upstreamRepoUrl}", sourceBranchName, targetBranchname);
+
+         var pr = Client.PullRequest.Create(Repo.Id, newPr).Result;
+
+         Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranchname}' Title='{pr.Title}'");
       }
 
       public void Dispose()

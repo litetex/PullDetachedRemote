@@ -29,7 +29,10 @@ namespace PullDetachedRemote
          //#if !DEBUG
          //try
          //{
-         new CrashDetector().Init();
+         new CrashDetector()
+         {
+            SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
+         }.Init();
          //#endif
          Parser.Default.ParseArguments<CmdOption>(args)
                   .WithParsed((opt) =>

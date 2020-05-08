@@ -84,7 +84,7 @@ namespace PullDetachedRemote
                       });
 
             CredentialsHandler upstreamCredentialsHandler = null;
-            if(Config.DetachedCredsUseGitHub)
+            if(Config.UpstreamRepoUseGitHubCreds)
             {
                upstreamCredentialsHandler = originCredentialsHandler;
                Log.Info($"Will auth upstream-remote with GITHUB_TOKEN");
@@ -103,7 +103,7 @@ namespace PullDetachedRemote
 
             GitWorkflow.Init(originCredentialsHandler, upstreamCredentialsHandler);
 
-            GitHubWorkflow.Init(GitWorkflow.OriginRemote);
+            GitHubWorkflow.Init(GitWorkflow.OriginRepoUrl);
 
             var createdBranch = GitWorkflow.CheckoutOriginUpdateBranch();
 
@@ -134,8 +134,7 @@ namespace PullDetachedRemote
                GitWorkflow.PushOriginUpdateBranch();
             }
 
-            if (createdBranch)
-               GitHubWorkflow.TryCreatePullRequest(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
+            GitHubWorkflow.EnsurePullRequestCreated(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
          }
 
          Log.Info("Finished run");

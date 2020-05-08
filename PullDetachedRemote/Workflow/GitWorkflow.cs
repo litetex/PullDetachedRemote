@@ -19,13 +19,15 @@ namespace PullDetachedRemote.Workflow
 
       protected CredentialsHandler UpstreamCredentialsHandler { get; set; }
 
+      protected Remote OriginRemote { get => Repo.Network.Remotes["origin"]; }
+
       protected Remote UpstreamRemote { get; set; }
 
       protected Branch OriginUpdateBranch { get; set; }
 
       protected Branch UpstreamBranch { get; set; }
 
-      public string OriginRemote { get => Repo.Network.Remotes["origin"].PushUrl; }
+      public string OriginRepoUrl { get => OriginRemote.PushUrl; }
 
       public string UpstreamRepoUrl { get => UpstreamRemote.PushUrl; }
 
@@ -202,10 +204,21 @@ namespace PullDetachedRemote.Workflow
 
       public void PushOriginUpdateBranch()
       {
-         if (OriginUpdateBranch.RemoteName != null && OriginUpdateBranch.RemoteName != OriginRemote)
-            throw new ArgumentException($"Will not push: {nameof(OriginUpdateBranch)}.{nameof(OriginUpdateBranch.RemoteName)}'{OriginUpdateBranch.RemoteName}' != {nameof(OriginRemote)}{OriginRemote}");
+         if (OriginUpdateBranch.RemoteName != null && OriginUpdateBranch.RemoteName != OriginRemote.Name)
+            throw new ArgumentException($"Will not push: {nameof(OriginUpdateBranch)}.{nameof(OriginUpdateBranch.RemoteName)}'{OriginUpdateBranch.RemoteName}' != {nameof(OriginRemote)}{OriginRemote.Name}");
 
+         if (OriginUpdateBranch.RemoteName == null)
+         {
+            Repo.Branches.Update(OriginUpdateBranch,
+               b => b.Remote = OriginRemote.Name,
+               b => b.UpstreamBranch = OriginUpdateBranch.CanonicalName);
+
+            Log.Info($"Set remote of {nameof(OriginUpdateBranch)}['{OriginUpdateBranch.CanonicalName}'] to '{OriginRemote.Name}/{OriginRepoUrl}'");
+         }
+
+         Log.Info($"Pushing {nameof(OriginUpdateBranch)} '{OriginUpdateBranch.FriendlyName}'->'{OriginUpdateBranch.RemoteName}'");
          Repo.Network.Push(OriginUpdateBranch, new PushOptions() { CredentialsProvider = OriginCredentialsHandler });
+         Log.Info($"Pushed {nameof(OriginUpdateBranch)}");
       }
 
       public void Dispose()

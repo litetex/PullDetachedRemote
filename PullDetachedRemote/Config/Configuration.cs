@@ -25,6 +25,11 @@ namespace PullDetachedRemote.Config
       // TODO: Checkout working repo if not exists?
 
       /// <summary>
+      /// Where to merge the PR into
+      /// </summary>
+      public string BaseOriginBranch { get; set; }
+
+      /// <summary>
       /// Required; Detached remote repository that should be used
       /// </summary>
       public string BaseUpstreamRepo { get; set; }
@@ -51,9 +56,9 @@ namespace PullDetachedRemote.Config
       public string GitHubToken { get; set; } = null;
 
       /// <summary>
-      /// if true uses <see cref="GitHubToken"/>
+      /// if true uses <see cref="GitHubToken"/> for the <see cref="BaseUpstreamRepo"/>
       /// </summary>
-      public bool DetachedCredsUseGitHub { get; set; } = true;
+      public bool UpstreamRepoUseGitHubCreds { get; set; } = true;
 
       /// <summary>
       /// DETACHED_CREDS_PRINCIPAL <para/>

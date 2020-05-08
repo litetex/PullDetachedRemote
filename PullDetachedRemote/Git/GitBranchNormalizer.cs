@@ -33,6 +33,7 @@ namespace PullDetachedRemote.Git
          value = ReplaceAll(value, "@{", "-");
          value = ReplaceAll(value, new Regex(@"\.$"), "");
          value = ReplaceAll(value, new Regex(@"\/$"), "");
+         value = ReplaceAll(value, new Regex(@"[\/]{2,}"), "/");
          value = ReplaceAll(value, new Regex(@"\.lock$"), "");
          return value;
       }
