@@ -50,7 +50,7 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
             Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.BaseUpstreamRepo}-{Config.BaseUpstreamBranch}";
 
-         Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Clean(Config.NameOfOriginUpdateBranch);
+         Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Fix(Config.NameOfOriginUpdateBranch);
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
             throw new ArgumentException($"{nameof(Config.NameOfOriginUpdateBranch)}[='{Config.NameOfOriginUpdateBranch}'] is invalid");
 

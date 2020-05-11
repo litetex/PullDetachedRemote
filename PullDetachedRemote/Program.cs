@@ -25,44 +25,43 @@ namespace PullDetachedRemote
          }));
          InitLog();
 
-         // TODO
-         //#if !DEBUG
-         //try
-         //{
-         new CrashDetector()
+#if !DEBUG
+         try
          {
-            SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
-         }.Init();
-         //#endif
-         Parser.Default.ParseArguments<CmdOption>(args)
-                  .WithParsed((opt) =>
-                  {
-                     var starter = new StartUp(opt);
-                     starter.Start();
-                  })
-                  .WithNotParsed((ex) =>
-                  {
-                     if (ex.All(err =>
-                             new ErrorType[]
-                             {
+            new CrashDetector()
+            {
+               SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
+            }.Init();
+#endif
+            Parser.Default.ParseArguments<CmdOption>(args)
+                     .WithParsed((opt) =>
+                     {
+                        var starter = new StartUp(opt);
+                        starter.Start();
+                     })
+                     .WithNotParsed((ex) =>
+                     {
+                        if (ex.All(err =>
+                                new ErrorType[]
+                                {
                                  ErrorType.HelpRequestedError,
                                  ErrorType.HelpVerbRequestedError
-                             }.Contains(err.Tag))
-                       )
-                        return;
+                                }.Contains(err.Tag))
+                          )
+                           return;
 
-                     InitLog();
-                     foreach (var error in ex)
-                        Log.Error($"Failed to parse: {error.Tag}");
-                  });
-         //#if !DEBUG
-         //}
-         //catch (Exception ex)
-         //{
-         //   InitLog();
-         //   Log.Fatal(ex);
-         //}
-         //#endif
+                        InitLog();
+                        foreach (var error in ex)
+                           Log.Error($"Failed to parse: {error.Tag}");
+                     });
+#if !DEBUG
+         }
+         catch (Exception ex)
+         {
+            InitLog();
+            Log.Fatal(ex);
+         }
+#endif
       }
 
       static void InitLog(Action<DefaultLoggerInitializer> initAction = null)
