@@ -1,2 +1,2 @@
 # PullDetachedRemote
-Pulls from another repo a detached remote
+Creates an detached upstream branch from another repo
