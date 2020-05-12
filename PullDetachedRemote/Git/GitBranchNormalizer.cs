@@ -18,6 +18,9 @@ namespace PullDetachedRemote.Git
    {
       public static bool IsValid(string value)
       {
+         if (string.IsNullOrWhiteSpace(value))
+            return false;
+
          return !InvalidaitionReason.ALL.Any(x => x.Validator(value));
       }
 
@@ -31,9 +34,9 @@ namespace PullDetachedRemote.Git
          {
             wasInvalid = false;
 
-            foreach(var invReason in InvalidaitionReason.ALL)
+            foreach (var invReason in InvalidaitionReason.ALL)
             {
-               if(invReason.Validator(value))
+               if (invReason.Validator(value))
                {
                   wasInvalid = true;
 
@@ -54,26 +57,19 @@ namespace PullDetachedRemote.Git
 
       public class InvalidaitionReason
       {
-         public static InvalidaitionReason[] ALL { get => new InvalidaitionReason[]
-            {
+         public static InvalidaitionReason[] ALL
+         {
+            get => new InvalidaitionReason[]
+{
                DOT_AT_START,
                LOCK_AT_END,
                DOUBLE_CONSECUTIVE_DOT,
-               ASCII_CONTROL_CHAR_LOWER_032,
-               ASCII_CHAR_127_DEL,
-               ASCII_CHAR_32_SPACE,
-               ASCII_CHAR_126_TILDE,
-               ASCII_CHAR_94_CARET,
-               ASCII_CHAR_58_COLON,
-               ASCII_CHAR_63_QUESTION_MARK,
-               ASCII_CHAR_42_ASTERIK,
-               ASCII_CHAR_91_OPEN_BRACKET,
+               INVALID_CHAR,
                BEGIN_SLASH,
                END_SLASH,
                END_DOT,
                AT_LEFT_CURLY_BRACKET,
-               AT,
-               BACK_SLASH
+               AT
             };
          }
 
@@ -83,11 +79,11 @@ namespace PullDetachedRemote.Git
           * or end with the sequence .lock. 
           */
          public static readonly InvalidaitionReason DOT_AT_START = new InvalidaitionReason(
-            str => str.StartsWith('.'),
+            str => str.Contains('/') && str.StartsWith('.'),
             str => str.Remove(0, 1)
          );
          public static readonly InvalidaitionReason LOCK_AT_END = new InvalidaitionReason(
-            str => str.EndsWith(".lock"),
+            str => str.Contains('/') && str.EndsWith(".lock"),
             str => str.Remove(str.Length - 5)
          );
 
@@ -101,53 +97,26 @@ namespace PullDetachedRemote.Git
           * 3. They cannot have two consecutive dots .. anywhere. 
           */
          public static readonly InvalidaitionReason DOUBLE_CONSECUTIVE_DOT = new InvalidaitionReason(
-            str => str.Contains(".."), 
+            str => str.Contains(".."),
             str => str.Replace("..", null)
          );
 
-         /*
-          * 4. They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space, tilde ~, caret ^, or colon : anywhere. 
-          */
-         public static readonly InvalidaitionReason ASCII_CONTROL_CHAR_LOWER_032 = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c < 32) != default, 
-            str => string.Concat(str.Where(c => c >= 32))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_127_DEL = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 127) != default,
-            str => string.Concat(str.Where(c => c != 127))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_32_SPACE = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 32) != default,
-            str => string.Concat(str.Where(c => c != 32))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_126_TILDE = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 126) != default,
-            str => string.Concat(str.Where(c => c != 126))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_94_CARET = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 94) != default,
-            str => string.Concat(str.Where(c => c != 94))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_58_COLON = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 58) != default,
-            str => string.Concat(str.Where(c => c != 58))
-         );
 
          /*
+          * 4. They cannot have ASCII control characters (i.e. bytes whose values are lower than \040 [-> 8x4 = 32], or \177 [-> 64x1 + 8x7 + 7 = 127] DEL),
+          * space, tilde ~, caret ^, or colon : anywhere. 
+          * 
           * 5. They cannot have question-mark ?, asterisk *, or open bracket [ anywhere. 
           * See the --refspec-pattern option below for an exception to this rule. 
+          * 
+          * 10. They cannot contain a \
           */
-         public static readonly InvalidaitionReason ASCII_CHAR_63_QUESTION_MARK = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 63) != default,
-            str => string.Concat(str.Where(c => c != 63))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_42_ASTERIK = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 42) != default,
-            str => string.Concat(str.Where(c => c != 42))
-         );
-         public static readonly InvalidaitionReason ASCII_CHAR_91_OPEN_BRACKET = new InvalidaitionReason(
-            str => str.FirstOrDefault(c => c == 91) != default,
-            str => string.Concat(str.Where(c => c != 91))
+
+         private static readonly int[] INVALID_CHARS = new int[] { 127, ' ', '~', '^', ':', '?', '*', '[', '\\' };
+
+         public static readonly InvalidaitionReason INVALID_CHAR = new InvalidaitionReason(
+            str => str.FirstOrDefault(c => c < 32 || INVALID_CHARS.Contains(c)) != default,
+            str => string.Concat(str.Where(c => c >= 32 && !INVALID_CHARS.Contains(c)))
          );
 
          /*
@@ -179,7 +148,7 @@ namespace PullDetachedRemote.Git
 #pragma warning restore S125 // Sections of code should not be commented out
          public static readonly InvalidaitionReason AT_LEFT_CURLY_BRACKET = new InvalidaitionReason(
            str => str.Contains("@{"),
-           str => str.Replace("@{",null)
+           str => str.Replace("@{", null)
          );
 
          /*
@@ -188,14 +157,6 @@ namespace PullDetachedRemote.Git
          public static readonly InvalidaitionReason AT = new InvalidaitionReason(
            str => "@".Equals(str),
            str => ""
-         );
-
-         /*
-          * 10. They cannot contain a \
-          */
-         public static readonly InvalidaitionReason BACK_SLASH = new InvalidaitionReason(
-           str => str.Contains('\\'),
-           str => str.Replace(@"\",null)
          );
 
          public Func<string, bool> Validator { get; protected set; }
