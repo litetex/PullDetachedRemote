@@ -16,7 +16,7 @@ namespace PullDetachedRemote.Tests.Git
       [InlineData("feature/abc/def")]
       [InlineData("feature/abc/def/hjashd")]
       [InlineData("this-is-a-test")]
-
+      [InlineData("a/b")]
       [InlineData("@a")]
       public void ShouldBeUnmodified(string value)
       {
@@ -78,8 +78,12 @@ namespace PullDetachedRemote.Tests.Git
       [InlineData("/b/", "b")]
       [InlineData("//b//", "b")]
       [InlineData("///b///", "b")]
-      [InlineData("///abcdef-ghjk/abc///", "abcdef-ghjk/abc")]
-
+      [InlineData("///abcdef-ghjk////abc///", "abcdef-ghjk/abc")]
+      [InlineData("a//b", "a/b")]
+      [InlineData("a//..//b", "a/b")]
+      [InlineData("a//////b", "a/b")]
+      [InlineData("a//c///b", "a/c/b")]
+      [InlineData("//.//c///b", "c/b")]
       /*
        * 7. They cannot end with a dot . 
        */

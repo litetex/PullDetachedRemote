@@ -12,7 +12,6 @@ namespace PullDetachedRemote.Git
    /// <summary>
    /// Normalizes a value to a valid git Branch
    /// </summary>
-   /// <seealso cref="https://github.com/TheSavior/clean-git-ref/blob/bf3c8afc8032bcdc6a53634c18b601dc6df478fb/src/index.js"/>
    /// <seealso cref="https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html"/>
    public static class GitBranchNormalizer
    {
@@ -67,6 +66,7 @@ namespace PullDetachedRemote.Git
                INVALID_CHAR,
                BEGIN_SLASH,
                END_SLASH,
+               MULTIPLE_SLASH,
                END_DOT,
                AT_LEFT_CURLY_BRACKET,
                AT
@@ -130,6 +130,10 @@ namespace PullDetachedRemote.Git
          public static readonly InvalidaitionReason END_SLASH = new InvalidaitionReason(
             str => str.EndsWith('/'),
             str => str.Remove(str.Length - 1)
+         );
+         public static readonly InvalidaitionReason MULTIPLE_SLASH = new InvalidaitionReason(
+            str => str.Contains("//"),
+            str => new Regex(@"[\/]{2,}").Replace(str, "/")
          );
 
          /*
