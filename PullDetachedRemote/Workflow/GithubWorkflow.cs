@@ -141,8 +141,13 @@ namespace PullDetachedRemote.Workflow
          Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranchname}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
       }
 
-      const string STATUS_START = "\r\n<details><summary>Status</summary><p>\r\n\r\n```automated-pullrequest-status\r\n";
-      const string STATUS_END = "```\r\n</p></details>\r\n";
+      const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
+      const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
+
+
+      const string STATUS_START_1 = "\r\n<details><summary class='automated-pullrequest-status'>Status [updated at ";
+      const string STATUS_MIDDLE_1 = " UTC]</summary><p>\r\n\r\n```\r\n";
+      const string STATUS_END_2= "```\r\n</p></details>\r\n";
 
       public void SetPRStatus(Status status)
       {
@@ -168,7 +173,13 @@ namespace PullDetachedRemote.Workflow
 
          PullRequest = Client.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
-            Body = beforeStatus + status.ToString() + afterStatus
+            Body = $"{beforeStatus}" +
+               $"\r\n" +
+               $"<details>" +
+               $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
+               $"<p>\r\n\r\n```\r\n{status}```\r\n</p>" +
+               $"</details>\r\n" +
+               $"{afterStatus}",
          }).Result;
          Log.Info($"Updated PR[ID='{PullRequest.Id}']: Body='{PullRequest.Body}'");
       }

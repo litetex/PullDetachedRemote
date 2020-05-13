@@ -8,7 +8,7 @@ namespace PullDetachedRemote
 {
    public class Status
    {
-      public DateTime LastUpdateTimeUtc { get; set; } = DateTime.UtcNow;
+      public DateTime LastUpdateStartTimeUtc { get; set; } = DateTime.UtcNow;
 
       public List<string> Messages { get; set; } = new List<string>();
 
