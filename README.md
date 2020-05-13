@@ -1,2 +1,2 @@
 # PullDetachedRemote
-Creates an detached upstream branch from another repo
+Creates an detached upstream branch and a corresponding PR from another repo and updates it automatically
