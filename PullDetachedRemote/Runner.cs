@@ -35,11 +35,8 @@ namespace PullDetachedRemote
 
       private void Init()
       {
-         // TODO
-//#if !DEBUG
          if (string.IsNullOrWhiteSpace(Config.GitHubToken))
             throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
-         //#endif
 
          if (string.IsNullOrWhiteSpace(Config.BaseUpstreamRepo) && Uri.TryCreate(Config.BaseUpstreamRepo, UriKind.Absolute, out _))
             throw new ArgumentException($"{nameof(Config.BaseUpstreamRepo)}[='{Config.BaseUpstreamRepo}'] is invalid");
@@ -48,7 +45,7 @@ namespace PullDetachedRemote
             throw new ArgumentException($"{nameof(Config.BaseUpstreamBranch)}[='{Config.BaseUpstreamBranch}'] is invalid");
 
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.BaseUpstreamRepo}-{Config.BaseUpstreamBranch}";
+            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.BaseUpstreamRepo}/{Config.BaseUpstreamBranch}";
 
          Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Fix(Config.NameOfOriginUpdateBranch);
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))

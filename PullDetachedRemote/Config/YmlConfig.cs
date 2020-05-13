@@ -55,7 +55,7 @@ namespace PullDetachedRemote.Config
       public override string SavePath { get; set; } = DEFAULT_SAVEPATH;
    }
 
-   class PropertyCopier
+   static class PropertyCopier
    {
       public static void Copy(object parent, object child)
       {

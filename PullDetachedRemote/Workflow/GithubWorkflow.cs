@@ -144,11 +144,6 @@ namespace PullDetachedRemote.Workflow
       const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
       const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
 
-
-      const string STATUS_START_1 = "\r\n<details><summary class='automated-pullrequest-status'>Status [updated at ";
-      const string STATUS_MIDDLE_1 = " UTC]</summary><p>\r\n\r\n```\r\n";
-      const string STATUS_END_2= "```\r\n</p></details>\r\n";
-
       public void SetPRStatus(Status status)
       {
          var prBody = PullRequest.Body ?? "";
