@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote.Workflow
 {
@@ -14,6 +15,8 @@ namespace PullDetachedRemote.Workflow
       protected GitHubClient Client { get; set; }
 
       protected Repository Repo { get; set; }
+
+      protected PullRequest PullRequest { get; set; }
 
       public GithubWorkflow(Config.Configuration config)
       {
@@ -118,24 +121,56 @@ namespace PullDetachedRemote.Workflow
       {
          var targetBranchname = Config.BaseOriginBranch ?? Repo.DefaultBranch;
 
-         var existingPr = Client.PullRequest.GetAllForRepository(Repo.Id)
+         PullRequest = Client.PullRequest.GetAllForRepository(Repo.Id)
             .Result
             .FirstOrDefault(pr => 
                pr.Base.Ref == targetBranchname && 
                pr.Head.Ref == sourceBranchName);
 
-         if (existingPr != null)
+         if (PullRequest != null)
          {
             Log.Info($"There is already a PullRequest for '{sourceBranchName}'->'{targetBranchname}'");
             return;
          }
 
          Log.Info($"Creating PullRequest '{sourceBranchName}'->'{targetBranchname}'");
-         var newPr = new NewPullRequest($"[UpstreamUpdate] from {upstreamRepoUrl}", sourceBranchName, targetBranchname);
+         var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, targetBranchname);
 
-         var pr = Client.PullRequest.Create(Repo.Id, newPr).Result;
+         PullRequest = Client.PullRequest.Create(Repo.Id, newPr).Result;
 
-         Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranchname}' Title='{pr.Title}'");
+         Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranchname}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
+      }
+
+      const string STATUS_START = "\r\n<details><summary>Status</summary><p>\r\n\r\n```automated-pullrequest-status\r\n";
+      const string STATUS_END = "```\r\n</p></details>\r\n";
+
+      public void SetPRStatus(Status status)
+      {
+         var prBody = PullRequest.Body ?? "";
+
+         var beforeStatus = prBody + STATUS_START;
+         var afterStatus = STATUS_END;
+
+         if (prBody.Contains(STATUS_START))
+         {
+            int startIndex = prBody.IndexOf(STATUS_START);
+            beforeStatus = prBody.Substring(0, startIndex) + STATUS_START;
+
+            var strAfterBeforeStatus = prBody.Substring(startIndex + STATUS_START.Length);
+            if (strAfterBeforeStatus.Contains(STATUS_END))
+            {
+               int endIndex = strAfterBeforeStatus.IndexOf(STATUS_END);
+               afterStatus = strAfterBeforeStatus.Substring(endIndex);
+            }
+         }
+
+         Log.Info($"Updating PR[ID='{PullRequest.Id}']");
+
+         PullRequest = Client.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
+         {
+            Body = beforeStatus + status.ToString() + afterStatus
+         }).Result;
+         Log.Info($"Updated PR[ID='{PullRequest.Id}']: Body='{PullRequest.Body}'");
       }
 
       public void Dispose()

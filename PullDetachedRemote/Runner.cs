@@ -71,6 +71,11 @@ namespace PullDetachedRemote
       {
          Log.Info("Starting run");
 
+         var status = new Status()
+         {
+            ResolvedConfig = Config
+         };
+
          using (GitWorkflow = new GitWorkflow(Config))
          using (GitHubWorkflow = new GithubWorkflow(Config))
          {
@@ -106,23 +111,30 @@ namespace PullDetachedRemote
             GitHubWorkflow.Init(GitWorkflow.OriginRepoUrl);
 
             var createdBranch = GitWorkflow.CheckoutOriginUpdateBranch();
+            status.CreatedBranch = createdBranch;
 
             var needsNewCommits = GitWorkflow.HasUpstreamBranchNewCommitsForUpdateBranch();
 
-            var hasCommitsFromNonUpstream = GitWorkflow.HasUpdateBranchNewerCommitsThanUpstreamBranch();
-
-            if(needsNewCommits && hasCommitsFromNonUpstream)
-            {
-               Log.Info("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
-            }
-
+            status.HasUpstreamUpdates = needsNewCommits;
             if(needsNewCommits)
-            {
+            { 
+               var hasCommitsFromNonUpstream = GitWorkflow.HasUpdateBranchNewerCommitsThanUpstreamBranch();
+
+               if(hasCommitsFromNonUpstream)
+               {
+                  Log.Info("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
+                  status.Messages.Add("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram");
+               }
+
                var success = GitWorkflow.UpdateBranchFromUpstream();
 
                if(!success)
                {
                   //Handle failure!
+                  Log.Error("Unable to update branch from upstream");
+
+                  status.Error = true;
+                  status.Messages.Add("Unable to update branch from upstream; see logs for more details");
                }
             }
 
@@ -132,9 +144,13 @@ namespace PullDetachedRemote
             {
                Log.Info("Needs to be pushed");
                GitWorkflow.PushOriginUpdateBranch();
+
+               status.Pushed = true;
             }
 
             GitHubWorkflow.EnsurePullRequestCreated(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
+
+            GitHubWorkflow.SetPRStatus(status);
          }
 
          Log.Info("Finished run");

@@ -55,8 +55,16 @@ namespace PullDetachedRemote.Workflow
          // Fetch
          var remoteOrigin = Repo.Network.Remotes["origin"];
          Log.Info("Fetching origin");
+
          // TODO: Don't fetch all!
-         Commands.Fetch(Repo, remoteOrigin.Name, remoteOrigin.FetchRefSpecs.Select(x => x.Specification), new FetchOptions() { CredentialsProvider = OriginCredentialsHandler }, "");
+         Commands.Fetch(
+           Repo,
+           remoteOrigin.Name,
+           remoteOrigin
+              .FetchRefSpecs
+              .Select(x => x.Specification),
+           new FetchOptions() { CredentialsProvider = OriginCredentialsHandler },
+           "");
          Log.Info("Fetched origin successfully");
 
          InitUpstreamBranch();
@@ -142,7 +150,6 @@ namespace PullDetachedRemote.Workflow
          if (!upstreamCommitLog.Any())
          {
             Log.Info($"No new commits on upstream-remote branch '{UpstreamBranch.FriendlyName}'");
-            //TODO
             return false;
          }
          Log.Info($"Detected {upstreamCommitLog.Count()} new commits on upstream-remote branch '{UpstreamBranch.FriendlyName}':");
@@ -163,7 +170,6 @@ namespace PullDetachedRemote.Workflow
          if (!updateOriginCommitLog.Any())
          {
             Log.Info($"No new commits on origin-update branch '{UpstreamBranch.FriendlyName}'");
-            //TODO
             return false;
          }
          Log.Info($"Detected {updateOriginCommitLog.Count()} new commits on origin-update branch '{UpstreamBranch.FriendlyName}':");
@@ -181,7 +187,7 @@ namespace PullDetachedRemote.Workflow
          if (rebaseResult.Status != RebaseStatus.Complete)
          {
             Repo.Rebase.Abort();
-            Log.Error($"Rebasing['{UpstreamBranch.FriendlyName}'->'{OriginUpdateBranch.FriendlyName}'] failed");
+            Log.Error($"Rebasing['{UpstreamBranch.FriendlyName}'->'{OriginUpdateBranch.FriendlyName}'] failed: {rebaseResult.Status}");
             return false;
          }
          Log.Info($"Rebasing['{UpstreamBranch.FriendlyName}'->'{OriginUpdateBranch.FriendlyName}'] successful: Completed {rebaseResult.CompletedStepCount} steps");
