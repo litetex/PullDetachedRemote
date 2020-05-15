@@ -35,3 +35,18 @@ jobs:
       with:
         name: PullDetachedRemote
         path: PullDetachedRemote/bin/Release/netcoreapp3.1/publish/PullDetachedRemote
+        
+    - name: Copy Dockerfile into build output
+      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/publish/
+    
+    - name: Build DockerImage
+      working-directory: PullDetachedRemote/bin/Release/netcoreapp3.1/publish/
+      run: docker build -t litetex/pulldetachedremote -f Dockerfile .
+      
+    - name: Publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: litetex/pulldetachedremote
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        tags: "develop"
