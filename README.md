@@ -1,2 +1,2 @@
-# pull-detached-remote
-Action that automatically pulls from another repo a detached remote
+# PullDetachedRemote
+Creates an detached upstream branch and a corresponding PR from another repo and updates it automatically
