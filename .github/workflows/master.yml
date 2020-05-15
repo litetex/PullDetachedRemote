@@ -1,0 +1,53 @@
+name: Master CI
+
+on:
+  push:
+    branches: master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.201
+      
+    - name: Install dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+     
+    - name: Publish
+      working-directory: PullDetachedRemote
+      run: dotnet publish -c Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PullDetachedRemote
+        path: PullDetachedRemote/bin/Release/netcoreapp3.1/publish/PullDetachedRemote
+        
+    - name: Release - Create Draft for Release
+      id: create_draft
+      uses: release-drafter/release-drafter@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_draft.outputs.upload_url }} 
+        asset_path: ./PullDetachedRemote/bin/Release/netcoreapp3.1/publish/PullDetachedRemote
+        asset_name: PullDetachedRemote
+        asset_content_type: application/octet-stream
