@@ -28,16 +28,10 @@ jobs:
      
     - name: Publish
       working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: PullDetachedRemote
-        path: PullDetachedRemote/bin/Release/netcoreapp3.1/linux-x64/publish/PullDetachedRemote
+      run: dotnet publish -c Release -r linux-musl-x64 /p:PublishSingleFile=true
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/linux-x64/publish/
+      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/linux-musl-x64/publish/
           
     - name: Builder Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
@@ -47,4 +41,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "develop,develop-${{ github.sha }}"
-        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/linux-x64/publish/
+        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/linux-musl-x64/publish/
