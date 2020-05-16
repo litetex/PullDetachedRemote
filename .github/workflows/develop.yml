@@ -39,7 +39,7 @@ jobs:
     - name: Copy Dockerfile into build output
       run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/publish/
           
-    - name: Publish to Registry
+    - name: Builder Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
