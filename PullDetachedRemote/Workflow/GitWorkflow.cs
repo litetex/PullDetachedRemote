@@ -39,7 +39,7 @@ namespace PullDetachedRemote.Workflow
          Config = config;
       }
 
-      public void Init(CredentialsHandler originCredentialsHandler, CredentialsHandler upstreamCredentialsHandler)
+      public void Init(CredentialsHandler originCredentialsHandler, CredentialsHandler upstreamCredentialsHandler, bool doClone)
       {
          OriginCredentialsHandler = originCredentialsHandler;
          UpstreamCredentialsHandler = upstreamCredentialsHandler;
@@ -49,6 +49,13 @@ namespace PullDetachedRemote.Workflow
          Log.Info($"Using Identity: Username='{Identity.Name}', Email='{Identity.Email}'");
 
          // Init Repo
+         if(doClone)
+         {
+            Log.Info($"Cloning '{Config.BaseOriginRepo}' into '{Config.PathToWorkingRepo}'");
+            Config.PathToWorkingRepo = Repository.Clone(Config.BaseOriginRepo, Config.PathToWorkingRepo, new CloneOptions() { CredentialsProvider = OriginCredentialsHandler });
+            Log.Info($"Cloned successfully into '{Config.PathToWorkingRepo}'");
+         }
+
          Log.Info($"Will use repo at '{Config.PathToWorkingRepo}'");
          Repo = new Repository(Config.PathToWorkingRepo);
 

@@ -16,6 +16,8 @@ namespace PullDetachedRemote
 {
    public class Runner
    {
+      protected bool DoClone { get; set; } = false;
+
       protected Config.Configuration Config { get; set; }
 
       protected GitWorkflow GitWorkflow { get; set; }
@@ -51,9 +53,20 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
             throw new ArgumentException($"{nameof(Config.NameOfOriginUpdateBranch)}[='{Config.NameOfOriginUpdateBranch}'] is invalid");
 
-         Config.PathToWorkingRepo = Repository.Discover(Config.PathToWorkingRepo);
-         if (Config.PathToWorkingRepo == null)
+         var discoveredRepo = Repository.Discover(Config.PathToWorkingRepo ?? AppDomain.CurrentDomain.BaseDirectory);
+         if (discoveredRepo == null && !Config.CloneIfNotFound)
             throw new ArgumentException("No local repository found");
+
+         if (discoveredRepo != null)
+            Config.PathToWorkingRepo = discoveredRepo;
+         else
+            DoClone = true;
+
+         if (DoClone && string.IsNullOrWhiteSpace(Config.PathToWorkingRepo))
+            throw new ArgumentException($"{nameof(Config.PathToWorkingRepo)}[='{Config.PathToWorkingRepo}'] is invalid");
+
+         if (DoClone && string.IsNullOrWhiteSpace(Config.BaseOriginRepo))
+            throw new ArgumentException($"{nameof(Config.BaseOriginRepo)}[='{Config.BaseOriginRepo}'] is invalid");
 
          if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
             Config.IdentityEmail = "actions@github.com";
@@ -103,7 +116,7 @@ namespace PullDetachedRemote
                Log.Info($"Will auth upstream-remote with custom credentials");
             }
 
-            GitWorkflow.Init(originCredentialsHandler, upstreamCredentialsHandler);
+            GitWorkflow.Init(originCredentialsHandler, upstreamCredentialsHandler, DoClone);
 
             GitHubWorkflow.Init(GitWorkflow.OriginRepoUrl);
 

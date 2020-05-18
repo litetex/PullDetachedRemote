@@ -22,7 +22,15 @@ namespace PullDetachedRemote.Config
       /// </summary>
       public string PathToWorkingRepo { get; set; } = null;
 
-      // TODO: Checkout working repo if not exists?
+      /// <summary>
+      /// Clones, if the repository is not found
+      /// </summary>
+      public bool CloneIfNotFound { get; set; } = false;
+
+      /// <summary>
+      /// Only required for cloning
+      /// </summary>
+      public string BaseOriginRepo { get; set; } = null;
 
       /// <summary>
       /// Where to merge the PR into
