@@ -40,39 +40,22 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.GitHubToken))
             throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
 
-         if (string.IsNullOrWhiteSpace(Config.BaseUpstreamRepo) && Uri.TryCreate(Config.BaseUpstreamRepo, UriKind.Absolute, out _))
-            throw new ArgumentException($"{nameof(Config.BaseUpstreamRepo)}[='{Config.BaseUpstreamRepo}'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.UpstreamRepo) && Uri.TryCreate(Config.UpstreamRepo, UriKind.Absolute, out _))
+            throw new ArgumentException($"{nameof(Config.UpstreamRepo)}[='{Config.UpstreamRepo}'] is invalid");
 
-         if (string.IsNullOrWhiteSpace(Config.BaseUpstreamBranch))
-            throw new ArgumentException($"{nameof(Config.BaseUpstreamBranch)}[='{Config.BaseUpstreamBranch}'] is invalid");
-
-         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.BaseUpstreamRepo}/{Config.BaseUpstreamBranch}";
-
-         Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Fix(Config.NameOfOriginUpdateBranch);
-         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            throw new ArgumentException($"{nameof(Config.NameOfOriginUpdateBranch)}[='{Config.NameOfOriginUpdateBranch}'] is invalid");
-
-         var discoveredRepo = Repository.Discover(Config.PathToWorkingRepo ?? AppDomain.CurrentDomain.BaseDirectory);
-         if (discoveredRepo == null && !Config.CloneIfNotFound)
-            throw new ArgumentException("No local repository found");
-
-         if (discoveredRepo != null)
-            Config.PathToWorkingRepo = discoveredRepo;
-         else
-            DoClone = true;
-
-         if (DoClone && string.IsNullOrWhiteSpace(Config.PathToWorkingRepo))
+         if (string.IsNullOrWhiteSpace(Config.PathToWorkingRepo))
             throw new ArgumentException($"{nameof(Config.PathToWorkingRepo)}[='{Config.PathToWorkingRepo}'] is invalid");
 
-         if (DoClone && string.IsNullOrWhiteSpace(Config.BaseOriginRepo))
-            throw new ArgumentException($"{nameof(Config.BaseOriginRepo)}[='{Config.BaseOriginRepo}'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.UpstreamBranch))
+            Config.UpstreamBranch = null; // Process it later!
 
          if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
             Config.IdentityEmail = "actions@github.com";
 
          if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
             Config.IdentityUsername = $"Github Action - {Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version}";
+
+
       }
 
       #endregion Init
@@ -81,7 +64,7 @@ namespace PullDetachedRemote
       {
          Log.Info("Starting run");
 
-         var status = new Status()
+         var status = new StatusReport()
          {
             ResolvedConfig = Config
          };
@@ -116,7 +99,13 @@ namespace PullDetachedRemote
                Log.Info($"Will auth upstream-remote with custom credentials");
             }
 
+            InitRepo();
+
             GitWorkflow.Init(originCredentialsHandler, upstreamCredentialsHandler, DoClone);
+
+            ConfigureNameOfOriginUpdateBranch(GitWorkflow);
+
+            GitWorkflow.InitUpstreamBranch();
 
             GitHubWorkflow.Init(GitWorkflow.OriginRepoUrl);
 
@@ -150,21 +139,79 @@ namespace PullDetachedRemote
 
             GitWorkflow.DetachUpstreamRemote();
 
-            if(createdBranch || needsNewCommits)
+            if (!GitWorkflow.HasUpdateBranchNewerCommitsThanPRTargetedBranch(GitHubWorkflow.TargetPRBranchName))
             {
-               Log.Info("Needs to be pushed");
-               GitWorkflow.PushOriginUpdateBranch();
+               Log.Info("Can't create a PR when the pr-base branch has no newer commits than the targeted-branch");
+               status.Messages.Add("Can't create a PR when the pr-base branch has no newer commits than the targeted-branch");
 
-               status.Pushed = true;
+               status.PRBaseNotBeforeTarget = true;
             }
+            else
+            {
+               if (createdBranch || needsNewCommits)
+               {
+                  Log.Info("Needs to be pushed");
+                  GitWorkflow.PushOriginUpdateBranch();
 
-            GitHubWorkflow.EnsurePullRequestCreated(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
+                  status.Pushed = true;
+               }
 
-            GitHubWorkflow.SetPRStatus(status);
+               status.CreatedPR = GitHubWorkflow.EnsurePullRequestCreated(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
+
+               status.UpdatedPRSuccessfully = true;
+               try
+               {
+                  GitHubWorkflow.SetPRStatus(status);
+               }
+               catch
+               {
+                  status.UpdatedPRSuccessfully = false;
+                  throw;
+               }
+            }
          }
 
          Log.Info("Finished run");
+
+         Log.Info($"=== STATUS REPORT ===\r\n{status}");
       }
-      
+
+      private void InitRepo()
+      {
+         var discoveredRepo = Repository.Discover(Config.PathToWorkingRepo);
+         if (discoveredRepo == null && Config.CloneMode == CloneMode.DO_NOTHING)
+            throw new ArgumentException("No local repository found");
+
+         if (discoveredRepo == null || Config.CloneMode == CloneMode.CLONE_ALWAYS)
+         {
+            DoClone = true;
+
+            if (string.IsNullOrWhiteSpace(Config.OriginRepo))
+               throw new ArgumentException($"{nameof(Config.OriginRepo)}[='{Config.OriginRepo}'] is invalid");
+         }
+         else
+            Config.PathToWorkingRepo = discoveredRepo;
+      }
+
+      private void ConfigureNameOfOriginUpdateBranch(GitWorkflow gitWorkflow)
+      {
+         if(Config.UpstreamBranch == null)
+         {
+            Log.Info("Auto detecting default upstream branch... May took some time");
+
+            Config.UpstreamBranch = gitWorkflow.GetDefaultUpstreamBranch();
+
+            Log.Info($"Got default upstream-branch[name='{Config.UpstreamBranch}'] of '{Config.UpstreamRepo}'");
+         }
+
+         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
+            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.UpstreamRepo}/{Config.UpstreamBranch}";
+
+         Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Fix(Config.NameOfOriginUpdateBranch);
+         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
+            throw new ArgumentException($"{nameof(Config.NameOfOriginUpdateBranch)}[='{Config.NameOfOriginUpdateBranch}'] is invalid");
+      }
+
+
    }
 }

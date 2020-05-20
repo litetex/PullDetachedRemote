@@ -1,9 +1,12 @@
-﻿using Octokit;
+﻿using CoreFrameworkBase.Tasks;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote.Workflow
@@ -18,13 +21,26 @@ namespace PullDetachedRemote.Workflow
 
       protected PullRequest PullRequest { get; set; }
 
+      /// <summary>
+      /// Targeted Branch to merge the PR into
+      /// </summary>
+      public string TargetPRBranchName { get; protected set; }
+
+      protected CancellationTokenSource AsyncConstructCancel { get; } = new CancellationTokenSource();
+
+      protected Task AsyncConstructTask { get; set; }
+
       public GithubWorkflow(Config.Configuration config)
       {
          Config = config;
+
+         AsyncConstructTask = Task.Run(() => ConstructorAsyncInitTask(AsyncConstructCancel.Token), AsyncConstructCancel.Token);
       }
 
-      public void Init(string originRemote)
+      protected void ConstructorAsyncInitTask(CancellationToken ct)
       {
+         ct.ThrowIfCancellationRequested();
+
          var phv = new ProductHeaderValue(Assembly.GetEntryAssembly().GetName().Name, Assembly.GetEntryAssembly().GetName().Version.ToString());
          Client = new GitHubClient(phv)
          {
@@ -33,19 +49,45 @@ namespace PullDetachedRemote.Workflow
          Log.Info($"Created GitHubClient['{phv}']");
 
          var checkConTask = Client.Miscellaneous.GetRateLimits();
-         if (!checkConTask.Wait(TimeSpan.FromSeconds(10)))
+         if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds,ct))
             throw new TimeoutException("GitHubClient-ConCheck timed out");
 
          if (checkConTask.Result == null)
             throw new InvalidOperationException("GitHubClient-ConCheck returned invalid data");
 
-         Log.Info($"Connection tested succesfully; RateLimit: {Client.GetLastApiInfo()?.RateLimit?.Remaining}/{Client.GetLastApiInfo()?.RateLimit?.Limit}");
+         var rateLimit = Client.GetLastApiInfo()?.RateLimit;
+         Log.Info($"Connection tested succesfully; " +
+            $"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString() ?? "N/A"})");
 
+         Log.Info("Done");
+      }
+
+      public void Init(string originRemote)
+      {
+         if (!AsyncConstructTask.IsCompleted)
+         {
+            Log.Info($"Waiting for {nameof(AsyncConstructTask)} to finish");
+
+            try
+            {
+               if (!AsyncConstructTask.Wait(TimeSpan.FromSeconds(20)))
+                  throw new TimeoutException($"{nameof(AsyncConstructTask)} took to long");
+            }
+            finally
+            {
+               AsyncConstructTask.Dispose();
+               AsyncConstructTask = null;
+               Log.Info($"Disposed {nameof(AsyncConstructTask)}");
+            }
+            Log.Info($"{nameof(AsyncConstructTask)} finished");
+         }
 
          if (!GetRepoFrom(originRemote))
             throw new ArgumentException("Unable to get GH-Repo from remote origin");
 
          Log.Info($"Using Repo[Owner='{Repo.Owner.Login}', Name='{Repo.Name}', URL='{Repo.CloneUrl}']");
+
+         TargetPRBranchName = Config.OriginBranch ?? Repo.DefaultBranch;
       }
 
       protected bool GetRepoFrom(string originRemote)
@@ -117,34 +159,34 @@ namespace PullDetachedRemote.Workflow
       }
 
 
-      public void EnsurePullRequestCreated(string upstreamRepoUrl, string sourceBranchName)
+      public bool EnsurePullRequestCreated(string upstreamRepoUrl, string sourceBranchName)
       {
-         var targetBranchname = Config.BaseOriginBranch ?? Repo.DefaultBranch;
-
          PullRequest = Client.PullRequest.GetAllForRepository(Repo.Id)
             .Result
             .FirstOrDefault(pr => 
-               pr.Base.Ref == targetBranchname && 
+               pr.Base.Ref == TargetPRBranchName && 
                pr.Head.Ref == sourceBranchName);
 
          if (PullRequest != null)
          {
-            Log.Info($"There is already a PullRequest for '{sourceBranchName}'->'{targetBranchname}'");
-            return;
+            Log.Info($"There is already a PullRequest for '{sourceBranchName}'->'{TargetPRBranchName}'");
+            return false;
          }
 
-         Log.Info($"Creating PullRequest '{sourceBranchName}'->'{targetBranchname}'");
-         var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, targetBranchname);
+         Log.Info($"Creating PullRequest '{sourceBranchName}'->'{TargetPRBranchName}'");
+         var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, TargetPRBranchName);
 
          PullRequest = Client.PullRequest.Create(Repo.Id, newPr).Result;
 
-         Log.Info($"Created PullRequest '{sourceBranchName}'->'{targetBranchname}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
+         Log.Info($"Created PullRequest '{sourceBranchName}'->'{TargetPRBranchName}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
+
+         return true;
       }
 
       const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
       const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
 
-      public void SetPRStatus(Status status)
+      public void SetPRStatus(StatusReport status)
       {
          var prBody = PullRequest.Body ?? "";
 
@@ -176,11 +218,24 @@ namespace PullDetachedRemote.Workflow
                $"</details>\r\n" +
                $"{afterStatus}",
          }).Result;
-         Log.Info($"Updated PR[ID='{PullRequest.Id}']: Body='{PullRequest.Body}'");
+         Log.Info($"Updated PR[ID='{PullRequest.Id}']: Body:\r\n{PullRequest.Body}");
       }
 
       public void Dispose()
       {
+         Log.Info("Disposing");
+
+         if (AsyncConstructTask != null)
+         {
+            AsyncConstructCancel.Cancel();
+
+            AsyncConstructCancel.Dispose();
+
+            AsyncConstructTask.Dispose();
+            AsyncConstructTask = null;
+            Log.Info($"Disposed {nameof(AsyncConstructTask)}");
+         }
+
          Client = null;
       }
    }
