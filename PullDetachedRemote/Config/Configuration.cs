@@ -61,10 +61,10 @@ namespace PullDetachedRemote.Config
       public string UpstreamRepo { get; set; }
 
       /// <summary>
-      /// Detached remote branch that should be used
+      /// Detached remote branch that should be used.
       /// </summary>
       /// <remarks>
-      /// Optional
+      /// Optional; WARNING: It's recommend to set this branch, otherwise inperformant
       /// </remarks>
       public string UpstreamBranch { get; set; }
 
@@ -74,14 +74,10 @@ namespace PullDetachedRemote.Config
       /// <remarks>
       /// Optional; default is a auto generated name from the upstreamRepo + Branch
       /// </remarks>
-      public string NameOfOriginUpdateBranch { get; set; }
+      public string OriginUpdateBranch { get; set; }
 
       /// <summary>
       /// GITHUB_TOKEN
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
       /// <remarks>
@@ -98,10 +94,6 @@ namespace PullDetachedRemote.Config
       /// <summary>
       /// DETACHED_CREDS_PRINCIPAL <para/>
       /// Username or token for detached/remote repo <para/>
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
       /// <remarks>
       /// Optional
@@ -112,10 +104,6 @@ namespace PullDetachedRemote.Config
       /// <summary>
       /// DETACHED_CREDS_PW <para/>
       /// Password for detached/remote repo
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
       /// <remarks>
       /// Optional

@@ -204,12 +204,12 @@ namespace PullDetachedRemote
             Log.Info($"Got default upstream-branch[name='{Config.UpstreamBranch}'] of '{Config.UpstreamRepo}'");
          }
 
-         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            Config.NameOfOriginUpdateBranch = $"upstreamupdate/{Config.UpstreamRepo}/{Config.UpstreamBranch}";
+         if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
+            Config.OriginUpdateBranch = $"upstreamupdate/{Config.UpstreamRepo}/{Config.UpstreamBranch}";
 
-         Config.NameOfOriginUpdateBranch = GitBranchNormalizer.Fix(Config.NameOfOriginUpdateBranch);
-         if (string.IsNullOrWhiteSpace(Config.NameOfOriginUpdateBranch))
-            throw new ArgumentException($"{nameof(Config.NameOfOriginUpdateBranch)}[='{Config.NameOfOriginUpdateBranch}'] is invalid");
+         Config.OriginUpdateBranch = GitBranchNormalizer.Fix(Config.OriginUpdateBranch);
+         if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
+            throw new ArgumentException($"{nameof(Config.OriginUpdateBranch)}[='{Config.OriginUpdateBranch}'] is invalid");
       }
 
 
