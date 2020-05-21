@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using CoreFramework.CrashLogging;
 using CoreFramework.Logging.Initalizer;
 using CoreFramework.Logging.Initalizer.Impl;
 using PullDetachedRemote.CMD;
