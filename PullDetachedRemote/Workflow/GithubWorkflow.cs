@@ -1,5 +1,4 @@
-﻿using CoreFrameworkBase.Tasks;
-using Octokit;
+﻿using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;

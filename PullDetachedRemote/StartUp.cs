@@ -1,4 +1,4 @@
-﻿using CoreFrameworkBase.Config;
+﻿using CoreFramework.Config;
 using PullDetachedRemote.CMD;
 using PullDetachedRemote.Config;
 using PullDetachedRemote.Util;

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CoreFramework.Config;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote.Config
 {
-   public class Configuration : YmlConfig
+   public class Configuration : YamlConfig
    {
       /// <summary>
       /// Email for commits

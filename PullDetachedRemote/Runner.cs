@@ -1,6 +1,4 @@
-﻿using CoreFrameworkBase.IO;
-using CoreFrameworkBase.Tasks;
-using LibGit2Sharp;
+﻿using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 using PullDetachedRemote.Config;
 using PullDetachedRemote.Git;
