@@ -51,7 +51,8 @@ namespace PullDetachedRemote
 
       protected void FillSampleData()
       {
-         // TODO?
+         Config.UpstreamRepo = "YOUR_UPSTREAM_REPO_HERE";
+         Config.UpstreamBranch = "YOUR_UPSTREAM_BRANCH_HERE";
       }
 
       protected void WriteConfig()
