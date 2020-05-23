@@ -17,12 +17,6 @@
           "LibGit2Sharp.NativeBinaries": "[2.0.306]"
         }
       },
-      "LibGit2Sharp.NativeBinaries": {
-        "type": "Direct",
-        "requested": "[2.0.312, )",
-        "resolved": "2.0.312",
-        "contentHash": "sL4OLOblkrLgDW+zE0OL4h9DYVCyZTlA4CppUCgqU8Ud/+Ah+Wxc3EtGpGjmH6xjDMRRpmHUFgAgzj+hzZTHZA=="
-      },
       "Litetex.CoreFramework.Config.Yaml": {
         "type": "Direct",
         "requested": "[2020.5.21.183627, )",
@@ -53,6 +47,11 @@
         "requested": "[8.1.1, )",
         "resolved": "8.1.1",
         "contentHash": "JXPO7bjUUeDIXgzlLAdNFCzrxBxBzYBbXy3MEp2uWIY7KK8LoNogaPhSg2mLuzCN5flp1ydeVqm+4j3tkP0pow=="
+      },
+      "LibGit2Sharp.NativeBinaries": {
+        "type": "Transitive",
+        "resolved": "2.0.306",
+        "contentHash": "LY9nyPE2X/eLl69ttuDPFFlKR8b5KXlqYej1YR1YmqmhF8Izo+vPX90q5ouOO5YGCf5d4lDUOC0x2yMWw00P7Q=="
       },
       "Litetex.CoreFramework.Base": {
         "type": "Transitive",
