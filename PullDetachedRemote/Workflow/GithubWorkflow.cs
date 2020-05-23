@@ -228,12 +228,12 @@ namespace PullDetachedRemote.Workflow
          {
             AsyncConstructCancel.Cancel();
 
-            AsyncConstructCancel.Dispose();
-
-            AsyncConstructTask.Dispose();
+            if(AsyncConstructTask.IsCompleted)
+               AsyncConstructTask.Dispose();
             AsyncConstructTask = null;
             Log.Info($"Disposed {nameof(AsyncConstructTask)}");
          }
+         AsyncConstructCancel.Dispose();
 
          Client = null;
       }
