@@ -1,5 +1,4 @@
-# This will run out of support on 2021-11-05
-FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1-alpine
+FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1-focal
 
 COPY PullDetachedRemote PullDetachedRemote
 
