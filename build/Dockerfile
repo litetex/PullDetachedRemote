@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1-focal
 
 RUN apt-get update \
-  && apt-get upgrade \
-  && apt-get install git  
+  && apt-get upgrade -y \
+  && apt-get install git -y
 
 COPY PullDetachedRemote PullDetachedRemote
 
