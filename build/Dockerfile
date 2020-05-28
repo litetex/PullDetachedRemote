@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1-focal
+FROM mcr.microsoft.com/dotnet/core/runtime:3.1-focal
 
-COPY . /
+COPY . /app
 
-RUN chmod +x PullDetachedRemote
+WORKDIR /app
 
-ENTRYPOINT ["./PullDetachedRemote"]
+ENTRYPOINT ["dotnet", "PullDetachedRemote.dll"]
