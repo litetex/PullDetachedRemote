@@ -28,7 +28,7 @@ jobs:
      
     - name: Publish
       working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r linux-x64
+      run: dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true
         
     - name: Copy Dockerfile into build output
       run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/linux-x64/publish/
