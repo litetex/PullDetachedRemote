@@ -28,10 +28,10 @@ jobs:
      
     - name: Publish
       working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r ubuntu.18.04-x64 /p:PublishSingleFile=true
+      run: dotnet publish -c Release -r alpine.3.9-x64 /p:PublishSingleFile=true
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/ubuntu.18.04-x64/publish/
+      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
           
     - name: Builder Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
@@ -41,4 +41,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "develop,develop-${{ github.sha }}"
-        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/ubuntu.18.04-x64/publish/
+        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/

@@ -28,7 +28,7 @@ jobs:
      
     - name: Publish
       working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r ubuntu.18.04-x64 /p:PublishSingleFile=true
+      run: dotnet publish -c Release -r alpine.3.9-x64 /p:PublishSingleFile=true
         
     - name: Release - Create Draft for Release
       id: create_draft
@@ -42,12 +42,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_draft.outputs.upload_url }} 
-        asset_path: ./PullDetachedRemote/bin/Release/netcoreapp3.1/ubuntu.18.04-x64/publish/PullDetachedRemote
+        asset_path: ./PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/PullDetachedRemote
         asset_name: PullDetachedRemote
         asset_content_type: application/octet-stream
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/ubuntu.18.04-x64/publish/
+      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
           
     - name: Builder Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
@@ -57,4 +57,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "latest,master-${{ github.sha }}"
-        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/ubuntu.18.04-x64/publish/
+        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
