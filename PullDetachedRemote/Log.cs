@@ -6,7 +6,7 @@ using System.Text;
 namespace PullDetachedRemote
 {
    /// <summary>
-   /// Adapter for CoreFrameworkbase
+   /// Adapter for CoreFramework
    /// </summary>
    internal class Log
    {
@@ -21,7 +21,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Verbose(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Verbose(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Verbose(
@@ -31,7 +31,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Verbose(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Verbose(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Verbose(
@@ -40,7 +40,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Debug(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Debug(ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Debug(
@@ -49,7 +49,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Debug(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Debug(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Debug(
@@ -58,7 +58,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Debug(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Debug(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Debug(
@@ -67,7 +67,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Debug(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Debug(ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Info(
@@ -76,7 +76,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Info(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Info(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Info(
@@ -86,7 +86,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Info(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Info(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Info(
@@ -95,7 +95,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Info(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Info(ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Warn(
@@ -104,7 +104,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Warn(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Warn(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Warn(
@@ -114,7 +114,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Warn(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Warn(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Warn(
@@ -123,7 +123,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Warn(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Warn(ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Error(
@@ -132,7 +132,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Error(
@@ -142,7 +142,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Error(
@@ -151,7 +151,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Fatal(
@@ -160,7 +160,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(message, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(message, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Fatal(
@@ -170,7 +170,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(message, ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(message, ex, memberName, sourceFilePath, sourceLineNumber);
       }
 
       public static void Fatal(
@@ -179,7 +179,7 @@ namespace PullDetachedRemote
          [CallerFilePath] string sourceFilePath = "",
          [CallerLineNumber] int sourceLineNumber = 0)
       {
-         CoreFrameworkBase.Log.Error(ex, memberName, sourceFilePath, sourceLineNumber);
+         CoreFramework.Log.Error(ex, memberName, sourceFilePath, sourceLineNumber);
       }
    }
 }

@@ -6,7 +6,7 @@ using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote
 {
-   public class Status
+   public class StatusReport
    {
       public DateTime LastUpdateStartTimeUtc { get; set; } = DateTime.UtcNow;
 
@@ -14,11 +14,17 @@ namespace PullDetachedRemote
 
       public bool Error { get; set; } = false;
 
+      public bool PRBaseNotBeforeTarget { get; set; } = false;
+
       public bool CreatedBranch { get; set; } = false;
 
       public bool HasUpstreamUpdates { get; set; } = false;
 
       public bool Pushed { get; set; } = false;
+
+      public bool CreatedPR { get; set; } = false;
+
+      public bool UpdatedPRSuccessfully { get; set; } = false;
 
       public Configuration ResolvedConfig { get; set; }
 

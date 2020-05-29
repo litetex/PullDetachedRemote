@@ -2,8 +2,10 @@
 using LibGit2Sharp.Handlers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace PullDetachedRemote.Workflow
 {
@@ -39,7 +41,7 @@ namespace PullDetachedRemote.Workflow
          Config = config;
       }
 
-      public void Init(CredentialsHandler originCredentialsHandler, CredentialsHandler upstreamCredentialsHandler)
+      public void Init(CredentialsHandler originCredentialsHandler, CredentialsHandler upstreamCredentialsHandler, bool doClone)
       {
          OriginCredentialsHandler = originCredentialsHandler;
          UpstreamCredentialsHandler = upstreamCredentialsHandler;
@@ -49,6 +51,21 @@ namespace PullDetachedRemote.Workflow
          Log.Info($"Using Identity: Username='{Identity.Name}', Email='{Identity.Email}'");
 
          // Init Repo
+         if (doClone)
+         {
+            if (Directory.Exists(Config.PathToWorkingRepo))
+            {
+               Log.Info($"Deleting existing folder {nameof(Config.PathToWorkingRepo)}='{Config.PathToWorkingRepo}'");
+               DeleteGitRepoSafe(Config.PathToWorkingRepo);
+               Log.Info($"Deleted {nameof(Config.PathToWorkingRepo)}='{Config.PathToWorkingRepo}'");
+            }
+
+            Log.Info($"Cloning '{Config.OriginRepo}' into '{Config.PathToWorkingRepo}'");
+            // NOTE: The path will be created if it doesn't exist. Git does this natively ;)
+            Config.PathToWorkingRepo = Repository.Clone(Config.OriginRepo, Config.PathToWorkingRepo, new CloneOptions() { CredentialsProvider = OriginCredentialsHandler });
+            Log.Info($"Cloned successfully into '{Config.PathToWorkingRepo}'");
+         }
+
          Log.Info($"Will use repo at '{Config.PathToWorkingRepo}'");
          Repo = new Repository(Config.PathToWorkingRepo);
 
@@ -66,13 +83,81 @@ namespace PullDetachedRemote.Workflow
            new FetchOptions() { CredentialsProvider = OriginCredentialsHandler },
            "");
          Log.Info("Fetched origin successfully");
-
-         InitUpstreamBranch();
       }
 
-      protected void InitUpstreamBranch()
+      // NOTE: Directory.Delete is not working because some file are read-only...
+      protected void DeleteGitRepoSafe(string directory)
       {
-         UpstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.BaseUpstreamRepo);
+         foreach (string subdirectory in Directory.EnumerateDirectories(directory))
+         {
+            DeleteGitRepoSafe(subdirectory);
+         }
+
+         foreach (string fileName in Directory.EnumerateFiles(directory))
+         {
+            var fileInfo = new FileInfo(fileName)
+            {
+               Attributes = FileAttributes.Normal
+            };
+            fileInfo.Delete();
+         }
+
+         //Something was not fast enough to delete, so let's wait a moment
+         if (Directory.EnumerateFiles(directory).Any())
+         {
+            Thread.Sleep(10);
+
+            //Again? - Wait a moment longer
+            if (Directory.EnumerateFiles(directory).Any())
+            {
+               Thread.Sleep(100);
+            }
+         }
+
+         int[] waitMs = new int[] { 10, 100, 1000, 5000 };
+         var waitStartIndex = 0;
+         while (Directory.EnumerateFiles(directory).Any() || Directory.EnumerateDirectories(directory).Any())
+         {
+            if (waitStartIndex > waitMs.Length - 1)
+               throw new TimeoutException($"Failed to delete '{directory}' in given time");
+            Thread.Sleep(waitMs[waitStartIndex]);
+            waitStartIndex++;
+         }
+
+
+         Directory.Delete(directory, true);
+      }
+
+      // NOTE: Not optimized
+      public string GetDefaultUpstreamBranch()
+      {
+         var tempFilesystemStructure = Path.GetTempFileName();
+         File.Delete(tempFilesystemStructure);
+         
+         Log.Info($"Getting default branch of upstream; Using templocation='{tempFilesystemStructure}'");
+         Directory.CreateDirectory(tempFilesystemStructure);
+
+         try
+         {
+            using var repo = new Repository(
+               Repository.Clone(Config.UpstreamRepo, tempFilesystemStructure, new CloneOptions()
+               {
+                  Checkout = false,
+                  CredentialsProvider = UpstreamCredentialsHandler
+               })
+            );
+            return repo.Branches.SingleOrDefault(x => x.IsCurrentRepositoryHead)?.FriendlyName;
+         }
+         finally
+         {
+            DeleteGitRepoSafe(tempFilesystemStructure);
+            Log.Info($"Deleted templocation='{tempFilesystemStructure}'");
+         }
+      }
+
+      public void InitUpstreamBranch()
+      {
+         UpstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.UpstreamRepo);
 
 
          if (UpstreamRemote != null)
@@ -82,13 +167,13 @@ namespace PullDetachedRemote.Workflow
          else
          {
             var upstreamRemoteName = GenerateRemoteUpstreamName(Repo.Network.Remotes.Select(x => x.Name));
-            UpstreamRemote = Repo.Network.Remotes.Add(upstreamRemoteName, Config.BaseUpstreamRepo);
+            UpstreamRemote = Repo.Network.Remotes.Add(upstreamRemoteName, Config.UpstreamRepo);
 
             Log.Info($"Added upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
          }
 
-         
-         Log.Info($"Using upstream-remote '{UpstreamRemote.Name}'<-'{Config.BaseUpstreamRepo}'");
+
+         Log.Info($"Using upstream-remote '{UpstreamRemote.Name}'<-'{Config.UpstreamRepo}'");
 
          FetchOptions fetchOptions = new FetchOptions()
          {
@@ -106,7 +191,7 @@ namespace PullDetachedRemote.Workflow
             "");
          Log.Info($"Fetched upstream-remote successfully");
 
-         UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{UpstreamRemote.Name}/{Config.BaseUpstreamBranch}");
+         UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{UpstreamRemote.Name}/{Config.UpstreamBranch}");
       }
 
       protected string GenerateRemoteUpstreamName(IEnumerable<string> exisitingRemoteNames, string preferedName = "upstream", int maxtries = 1000)
@@ -123,12 +208,11 @@ namespace PullDetachedRemote.Workflow
 
       public bool CheckoutOriginUpdateBranch()
       {
-
-         OriginUpdateBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == Config.NameOfOriginUpdateBranch);
+         OriginUpdateBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == Config.OriginUpdateBranch);
          if (OriginUpdateBranch == null)
          {
-            Log.Info($"Creating origin-update branch '{Config.NameOfOriginUpdateBranch}' from '{UpstreamBranch.FriendlyName}'");
-            OriginUpdateBranch = Repo.CreateBranch(Config.NameOfOriginUpdateBranch, UpstreamBranch.Tip);
+            Log.Info($"Creating origin-update branch '{Config.OriginUpdateBranch}' from '{UpstreamBranch.FriendlyName}'");
+            OriginUpdateBranch = Repo.CreateBranch(Config.OriginUpdateBranch, UpstreamBranch.Tip);
             Log.Info($"Created origin-update branch '{OriginUpdateBranch.FriendlyName}'[LatestCommit='{UpstreamBranch.Tip}']");
 
             return true;
@@ -141,40 +225,46 @@ namespace PullDetachedRemote.Workflow
 
       public bool HasUpstreamBranchNewCommitsForUpdateBranch()
       {
-         Log.Info($"Checking if upstream-remote branch has newer commits than origin-update branch '{OriginUpdateBranch.FriendlyName}'");
-         var upstreamCommitLog = Repo.Commits.QueryBy(new CommitFilter()
-         {
-            ExcludeReachableFrom = OriginUpdateBranch,
-            IncludeReachableFrom = UpstreamBranch,
-         });
-         if (!upstreamCommitLog.Any())
-         {
-            Log.Info($"No new commits on upstream-remote branch '{UpstreamBranch.FriendlyName}'");
-            return false;
-         }
-         Log.Info($"Detected {upstreamCommitLog.Count()} new commits on upstream-remote branch '{UpstreamBranch.FriendlyName}':");
-         foreach (var commit in upstreamCommitLog)
-            Log.Info($"{commit.Sha} | {commit.Message}");
-
-         return true;
+         return HasNewerCommitsThanWithLogging("upstream-remote", UpstreamBranch, "origin-update", OriginUpdateBranch);
       }
 
       public bool HasUpdateBranchNewerCommitsThanUpstreamBranch()
       {
-         Log.Info($"Checking if origin-update branch has newer commits than upstream-remote branch '{UpstreamBranch.FriendlyName}'");
+         return HasNewerCommitsThanWithLogging("origin-update", OriginUpdateBranch, "upstream-remote", UpstreamBranch);
+      }
+
+      public bool HasUpdateBranchNewerCommitsThanPRTargetedBranch(string prTargetedBranchName)
+      {
+         var prTarget = Repo.Branches.FirstOrDefault(b => b.FriendlyName == $"origin/{prTargetedBranchName}");
+
+         return HasNewerCommitsThanWithLogging("origin-update", OriginUpdateBranch, "pull-request-target/origin", prTarget, false);
+      }
+
+      /// <summary>
+      /// Checks if base has newer commits than target (with logging)
+      /// </summary>
+      protected bool HasNewerCommitsThanWithLogging(
+         string actualName,
+         Branch actual,
+         string targetName,
+         Branch target,
+         bool logCommitDiff = true)
+      {
+         Log.Info($"Checking if {actualName} branch has newer commits than {targetName} branch '{target.FriendlyName}'");
          var updateOriginCommitLog = Repo.Commits.QueryBy(new CommitFilter()
          {
-            ExcludeReachableFrom = UpstreamBranch,
-            IncludeReachableFrom = OriginUpdateBranch,
+            IncludeReachableFrom = actual,
+            ExcludeReachableFrom = target,
          });
          if (!updateOriginCommitLog.Any())
          {
-            Log.Info($"No new commits on origin-update branch '{UpstreamBranch.FriendlyName}'");
+            Log.Info($"No new commits on {actualName} branch '{actual.FriendlyName}'");
             return false;
          }
-         Log.Info($"Detected {updateOriginCommitLog.Count()} new commits on origin-update branch '{UpstreamBranch.FriendlyName}':");
-         foreach (var commit in updateOriginCommitLog)
-            Log.Info($"{commit.Sha} | {commit.Message}");
+         Log.Info($"Detected {updateOriginCommitLog.Count()} new commits on {actualName} branch '{actual.FriendlyName}':");
+         if(logCommitDiff)
+            foreach (var commit in updateOriginCommitLog)
+               Log.Info($"{commit.Sha} | {commit.Message}");
 
          return true;
       }
@@ -198,7 +288,7 @@ namespace PullDetachedRemote.Workflow
       public void DetachUpstreamRemote()
       {
          var toDetachremote = Repo.Network.Remotes.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
-         if(toDetachremote == null)
+         if (toDetachremote == null)
          {
             Log.Debug($"{nameof(UpstreamRemote)} is already removed");
             return;
@@ -229,7 +319,16 @@ namespace PullDetachedRemote.Workflow
 
       public void Dispose()
       {
-         DetachUpstreamRemote();
+         Log.Info("Disposing");
+         if (Repo != null)
+         {
+            DetachUpstreamRemote();
+            Repo.Dispose();
+
+            Log.Info($"Disposed {nameof(Repo)}");
+
+            Repo = null;
+         }
       }
    }
 }

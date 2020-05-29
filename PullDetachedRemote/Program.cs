@@ -1,7 +1,7 @@
 ﻿using CommandLine;
-using CoreFrameworkBase.Crash;
-using CoreFrameworkBase.Logging.Initalizer;
-using CoreFrameworkBase.Logging.Initalizer.Impl;
+using CoreFramework.CrashLogging;
+using CoreFramework.Logging.Initalizer;
+using CoreFramework.Logging.Initalizer.Impl;
 using PullDetachedRemote.CMD;
 using System;
 using System.Linq;

@@ -6,6 +6,9 @@
 
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
+    <!-- https://github.com/libgit2/libgit2sharp/issues/1754 -->
+    <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
+
     <!-- Emulate .NET Frameworks versioning behavior 'GenerateVersionFromPatternAndCurrentTime' (UTC based) -->
     <!-- https://github.com/dotnet/sdk/issues/8416#issuecomment-354095128 -->
     <Build>$([System.DateTime]::op_Subtraction($([System.DateTime]::get_UtcNow().get_Date()),$([System.DateTime]::new(2000,1,1))).get_TotalDays())</Build>
@@ -16,8 +19,9 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+    <PackageReference Include="Litetex.CoreFramework.Config.Yaml" Version="2020.5.21.183627" />
+    <PackageReference Include="Litetex.CoreFramework.CrashLogging" Version="2020.5.21.183627" />
     <PackageReference Include="Octokit" Version="0.47.0" />
-    <PackageReference Include="Litetex.CoreFrameworkBase" Version="1.0.7427.20448-dev" />
     <PackageReference Include="YamlDotNet" Version="8.1.1" />
   </ItemGroup>
 

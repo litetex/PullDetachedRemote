@@ -1,84 +1,114 @@
-﻿using System;
+﻿using CoreFramework.Config;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using YamlDotNet.Serialization;
 
 namespace PullDetachedRemote.Config
 {
-   public class Configuration : YmlConfig
+   public class Configuration : YamlConfig
    {
       /// <summary>
-      /// Email for commits, if not set "action@github.com"
+      /// Email for commits
       /// </summary>
+      /// <remarks>
+      /// Optional; default "action@github.com"
+      /// </remarks>
       public string IdentityEmail { get; set; } = null;
 
       /// <summary>
-      /// User for commits, if not set "GitHub Action - nameofThisProject Version"
+      /// User for commits
       /// </summary>
+      /// <remarks>
+      /// Optional; default "GitHub Action - nameofThisProject Version"
+      /// </remarks>
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
       /// Path to working repo; default = executable is in repo
       /// </summary>
-      public string PathToWorkingRepo { get; set; } = null;
+      /// <remarks>
+      /// Required; default is workdir/gitrepo
+      /// </remarks>
+      public string PathToWorkingRepo { get; set; } = "workdir/gitrepo";
 
-      // TODO: Checkout working repo if not exists?
+      /// <summary>
+      /// Clonesmode for the repo in <see cref="PathToWorkingRepo"/>
+      /// </summary>
+      public CloneMode CloneMode { get; set; } = CloneMode.DO_NOTHING;
+
+      /// <summary>
+      /// Only required for cloning
+      /// </summary>
+      /// <remarks>
+      /// Optional
+      /// </remarks>
+      public string OriginRepo { get; set; } = null;
 
       /// <summary>
       /// Where to merge the PR into
       /// </summary>
-      public string BaseOriginBranch { get; set; }
+      /// <remarks>
+      /// Optional; default is Github-Repo default-Branch
+      /// </remarks>
+      public string OriginBranch { get; set; }
 
       /// <summary>
-      /// Required; Detached remote repository that should be used
+      /// Detached remote repository that should be used
       /// </summary>
-      public string BaseUpstreamRepo { get; set; }
+      /// <remarks>
+      /// Required
+      /// </remarks>
+      public string UpstreamRepo { get; set; }
 
       /// <summary>
-      /// Detached remote branch that should be used
+      /// Detached remote branch that should be used.
       /// </summary>
-      public string BaseUpstreamBranch { get; set; }
+      /// <remarks>
+      /// Optional; WARNING: It's recommend to set this branch, otherwise inperformant
+      /// </remarks>
+      public string UpstreamBranch { get; set; }
 
       /// <summary>
-      /// Optional; Name of the Branch that is used for merging / PullRequest
+      /// Name of the branch that will be created in the <see cref="OriginRepo"/> with the changes from <see cref="UpstreamRepo"/>/<see cref="UpstreamBranch"/>
       /// </summary>
-      public string NameOfOriginUpdateBranch { get; set; }
+      /// <remarks>
+      /// Optional; default is a auto generated name from the upstreamRepo + Branch
+      /// </remarks>
+      public string OriginUpdateBranch { get; set; }
 
       /// <summary>
       /// GITHUB_TOKEN
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
+      /// <remarks>
+      /// Required
+      /// </remarks>
       [YamlIgnore]
       public string GitHubToken { get; set; } = null;
 
       /// <summary>
-      /// if true uses <see cref="GitHubToken"/> for the <see cref="BaseUpstreamRepo"/>
+      /// if true uses <see cref="GitHubToken"/> for the <see cref="UpstreamRepo"/>; default value is true
       /// </summary>
       public bool UpstreamRepoUseGitHubCreds { get; set; } = true;
 
       /// <summary>
       /// DETACHED_CREDS_PRINCIPAL <para/>
       /// Username or token for detached/remote repo <para/>
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
+      /// <remarks>
+      /// Optional
+      /// </remarks>
       [YamlIgnore]
       public string DetachedCredsPrinicipal { get; set; } = null;
 
       /// <summary>
       /// DETACHED_CREDS_PW <para/>
       /// Password for detached/remote repo
-      /// <para/>
-      /// Config possible over:
-      ///  - Commandline
-      ///  - Environment
       /// </summary>
+      /// <remarks>
+      /// Optional
+      /// </remarks>
       [YamlIgnore]
       public string DetachedCredsPassword { get; set; } = null;
 
