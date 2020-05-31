@@ -74,15 +74,32 @@ namespace PullDetachedRemote.Workflow
          Log.Info("Fetching origin");
 
          // TODO: Don't fetch all!
-         Commands.Fetch(
-           Repo,
-           remoteOrigin.Name,
-           remoteOrigin
-              .FetchRefSpecs
-              .Select(x => x.Specification),
-           new FetchOptions() { CredentialsProvider = OriginCredentialsHandler },
-           "");
+         try
+         {
+            Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
+         }
+         catch(LibGit2SharpException ex)
+         {
+            if(ex.Message?.ToLower() == "too many redirects or authentication replays")
+            {
+               Log.Warn("Got an exception while fetching; Trying to refetch without auth", ex);
+               Fetch(Repo, remoteOrigin, new FetchOptions());
+            }
+            throw;
+         }
          Log.Info("Fetched origin successfully");
+      }
+
+      protected void Fetch(Repository repo, Remote remote, FetchOptions options)
+      {
+         Commands.Fetch(
+              repo,
+              remote.Name,
+              remote
+                 .FetchRefSpecs
+                 .Select(x => x.Specification),
+              options,
+              "");
       }
 
       // NOTE: Directory.Delete is not working because some file are read-only...
