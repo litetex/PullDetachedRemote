@@ -73,7 +73,11 @@ namespace PullDetachedRemote.Workflow
          var remoteOrigin = Repo.Network.Remotes["origin"];
          Log.Info($"Fetching origin[url='{remoteOrigin.Url}', pushUrl='{remoteOrigin.PushUrl}']");
 
-
+         /*
+          * TODO: https://github.com/litetex/PullDetachedRemote/issues/12
+          * Implement --unshallow when lib2git finally implements it (after 8 years lol) -> https://github.com/libgit2/libgit2sharp/issues/229
+          * Currently "git fetch --prune --unshallow" has to be run before this task...
+          */
          Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
 
          Log.Info("Fetched origin successfully");
