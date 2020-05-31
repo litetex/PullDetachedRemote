@@ -287,15 +287,15 @@ namespace PullDetachedRemote.Workflow
 
       public void DetachUpstreamRemote()
       {
-         var toDetachremote = Repo.Network.Remotes.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
+         var toDetachremote = Repo?.Network?.Remotes?.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
          if (toDetachremote == null)
          {
-            Log.Debug($"{nameof(UpstreamRemote)} is already removed");
+            Log.Info($"{nameof(UpstreamRemote)} is already removed (or the repo is null)");
             return;
          }
 
-         Repo.Network.Remotes.Remove(toDetachremote.Name);
          Log.Info($"Removing {nameof(UpstreamRemote)} '{toDetachremote.Name}'");
+         Repo.Network.Remotes.Remove(toDetachremote.Name);
       }
 
       public void PushOriginUpdateBranch()
