@@ -5,7 +5,6 @@ using CoreFramework.Logging.Initalizer.Impl;
 using PullDetachedRemote.CMD;
 using System;
 using System.Linq;
-using System.Text;
 
 namespace PullDetachedRemote
 {
