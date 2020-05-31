@@ -22,19 +22,19 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.Configuration.GitHubToken"/>
       /// </summary>
-      [Option('g', "GITHUB_TOKEN")]
+      [Option('g', "GITHUB_TOKEN", HelpText = "Preferred way: Set them via environment")]
       public string GITHUB_TOKEN { get; set; } = null;
 
       /// <summary>
       /// <see cref="Config.Configuration.DetachedCredsPrinicipal"/>
       /// </summary>
-      [Option("DETACHED_CREDS_PRINCIPAL")]
+      [Option("DETACHED_CREDS_PRINCIPAL", HelpText = "Preferred way: Set them via environment")]
       public string DETACHED_CREDS_PRINCIPAL { get; set; } = null;
 
       /// <summary>
       /// <see cref="Config.Configuration.DetachedCredsPassword"/>
       /// </summary>
-      [Option("DETACHED_CREDS_PW")]
+      [Option("DETACHED_CREDS_PW", HelpText = "Preferred way: Set them via environment")]
       public string DETACHED_CREDS_PW { get; set; } = null;
 
       /// <summary>
