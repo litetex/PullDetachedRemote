@@ -27,12 +27,20 @@ namespace PullDetachedRemote
          }));
          InitLog();
 
+
+         // TODO: Remove
+         Log.Info($"Args: {string.Join(" ", args)}");
+
          if (args.Contains($"--{EXPECT_ESCAPED_INPUT}"))
          {
             Log.Info($"Detected flag: '--{EXPECT_ESCAPED_INPUT}'; Fixing input...");
             for (int i = 0; i < args.Length; i++)
                if (args[i].StartsWith('"') && args[i].EndsWith('"'))
                   args[i] = args[i][1..^1];
+
+
+            // TODO: Remove
+            Log.Info($"Args: {string.Join(" ", args)}");
          }
 
 #if !DEBUG
