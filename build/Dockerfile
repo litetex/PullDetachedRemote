@@ -7,4 +7,6 @@ COPY PullDetachedRemote PullDetachedRemote
 
 RUN chmod +x PullDetachedRemote
 
+USER 1001
+
 ENTRYPOINT ["./PullDetachedRemote"]
