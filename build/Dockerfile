@@ -11,5 +11,11 @@ USER 1001
 
 COPY PullDetachedRemote PullDetachedRemote
 
+USER root
+
+RUN chmod +x PullDetachedRemote
+
 # Execute at any cost deevaluated
-ENTRYPOINT ["sh", "/app/PullDetachedRemote"]
+USER 1001
+
+ENTRYPOINT ["/app/PullDetachedRemote"]
