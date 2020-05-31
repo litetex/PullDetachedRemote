@@ -5,6 +5,7 @@ using CoreFramework.Logging.Initalizer.Impl;
 using PullDetachedRemote.CMD;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace PullDetachedRemote
 {
@@ -26,32 +27,6 @@ namespace PullDetachedRemote
             CreateLogFilePathOnStartup = false,
          }));
          InitLog();
-
-
-         
-
-         // TODO: Remove
-         Log.Info($"Args: {string.Join(" ", args)}");
-         Log.Info($"CMD: {Environment.CommandLine}");
-
-         if (args.Contains($"--{EXPECT_ESCAPED_INPUT}"))
-         {
-            Log.Info($"Detected flag: '--{EXPECT_ESCAPED_INPUT}'; Fixing input...");
-            for (int i = 0; i < args.Length; i++)
-            {
-               Log.Info($"Processing: '{args[i]}'");
-               if (args[i].StartsWith("\\\"") && args[i].EndsWith("\\\""))
-               {
-                  var newArg = args[i][2..^2];
-                  Log.Info($"Fixing '{args[i]}'->'{newArg}'");
-                  args[i] = newArg;
-               }
-            }
-
-
-            // TODO: Remove
-            Log.Info($"Args: {string.Join(" ", args)}");
-         }
 
 #if !DEBUG
          try

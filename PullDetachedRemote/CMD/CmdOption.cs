@@ -98,11 +98,5 @@ namespace PullDetachedRemote.CMD
       public string UpstreamRepoUseGitHubCreds { get; set; }
 
       #endregion SetableBuildProperties
-
-      #region Integration
-      // Expect that the ARGS are something like this >>--arg \"value\"<< insteadof normally >>--arg "value"<< and fix them
-      [Option(Program.EXPECT_ESCAPED_INPUT, HelpText = "Expect that the ARGS are something like this >>--arg \\\"value\\\"<< insteadof normally >>--arg \"value\"<< and fix them")]
-      public bool ExpectEscapedInput { get; set; }
-      #endregion Integration
    }
 }
