@@ -31,7 +31,7 @@ namespace PullDetachedRemote.Workflow
 
       public string OriginRepoUrl { get => OriginRemote.PushUrl; }
 
-      public string UpstreamRepoUrl { get => UpstreamRemote.PushUrl; }
+      public string UpstreamRepoUrl { get => UpstreamRemote?.PushUrl; }
 
       public string OriginUpdateBranchName { get => OriginUpdateBranch?.FriendlyName; }
 
@@ -287,6 +287,12 @@ namespace PullDetachedRemote.Workflow
 
       public void DetachUpstreamRemote()
       {
+         if(UpstreamRemote == null)
+         {
+            Log.Info($"{nameof(UpstreamRemote)} is not set");
+            return;
+         }
+
          var toDetachremote = Repo?.Network?.Remotes?.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
          if (toDetachremote == null)
          {
@@ -322,7 +328,9 @@ namespace PullDetachedRemote.Workflow
          Log.Info("Disposing");
          if (Repo != null)
          {
-            DetachUpstreamRemote();
+            if(UpstreamRemote != null)
+               DetachUpstreamRemote();
+
             Repo.Dispose();
 
             Log.Info($"Disposed {nameof(Repo)}");
