@@ -85,7 +85,10 @@ namespace PullDetachedRemote.Workflow
 
       protected void Fetch(Repository repo, Remote remote, FetchOptions options)
       {
-         // TODO: Don't fetch all!
+         /*
+          * TODO: https://github.com/litetex/PullDetachedRemote/issues/13
+          * Don't fetch all, fetch only the corresponding branch
+          */
          Commands.Fetch(
               repo,
               remote.Name,
@@ -170,7 +173,6 @@ namespace PullDetachedRemote.Workflow
       {
          UpstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.UpstreamRepo);
 
-
          if (UpstreamRemote != null)
          {
             Log.Info($"Found already existing upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
@@ -182,7 +184,6 @@ namespace PullDetachedRemote.Workflow
 
             Log.Info($"Added upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
          }
-
 
          Log.Info($"Using upstream-remote '{UpstreamRemote.Name}'<-'{Config.UpstreamRepo}'");
 
