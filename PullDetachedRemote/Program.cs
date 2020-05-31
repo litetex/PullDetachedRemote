@@ -10,6 +10,8 @@ namespace PullDetachedRemote
 {
    public static class Program
    {
+      public const string EXPECT_ESCAPED_INPUT = "expectescapedinput";
+
       static void Main(string[] args)
       {
          Run(args);
@@ -25,8 +27,13 @@ namespace PullDetachedRemote
          }));
          InitLog();
 
-         // TODO: Remove
-         Log.Info($"Args: {string.Join(" ", args)}");
+         if (args.Contains($"--{EXPECT_ESCAPED_INPUT}"))
+         {
+            Log.Info($"Detected flag: '--{EXPECT_ESCAPED_INPUT}'; Fixing input...");
+            for (int i = 0; i < args.Length; i++)
+               if (args[i].StartsWith('"') && args[i].EndsWith('"'))
+                  args[i] = args[i][1..^1];
+         }
 
 #if !DEBUG
          try
@@ -36,7 +43,7 @@ namespace PullDetachedRemote
                SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
             }.Init();
 #endif
-            Parser.Default.ParseArguments<CmdOption>(args)
+         Parser.Default.ParseArguments<CmdOption>(args)
                      .WithParsed((opt) =>
                      {
                         var starter = new StartUp(opt);
