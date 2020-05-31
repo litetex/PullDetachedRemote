@@ -94,7 +94,7 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.Configuration.UpstreamRepoUseGitHubCreds"/>
       /// </summary>
-      [Option("upstreamrepousegithubcreds", HelpText = "Expected value is true/false or 0/1")]
+      [Option("upstreamrepousegithubcreds", HelpText = "Valid inputs are true/false or 0/1")]
       public string UpstreamRepoUseGitHubCreds { get; set; }
 
       #endregion SetableBuildProperties

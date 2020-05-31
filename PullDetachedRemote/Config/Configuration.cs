@@ -65,7 +65,7 @@ namespace PullDetachedRemote.Config
       /// Detached remote branch that should be used.
       /// </summary>
       /// <remarks>
-      /// Optional; WARNING: It's recommend to set this branch, otherwise inperformant
+      /// Optional; WARNING: It's recommend to set this branch, otherwise the process may be inperformant
       /// </remarks>
       public string UpstreamBranch { get; set; }
 
