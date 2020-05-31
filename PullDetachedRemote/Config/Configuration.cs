@@ -46,10 +46,10 @@ namespace PullDetachedRemote.Config
       public string OriginRepo { get; set; } = null;
 
       /// <summary>
-      /// Where to merge the PR into
+      /// The branch(name) to merge the PR into
       /// </summary>
       /// <remarks>
-      /// Optional; default is Github-Repo default-Branch
+      /// Optional; default is Github-Repos default-Branch
       /// </remarks>
       public string OriginBranch { get; set; }
 
