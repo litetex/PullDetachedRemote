@@ -25,6 +25,9 @@ namespace PullDetachedRemote
          }));
          InitLog();
 
+         // TODO: Remove
+         Log.Info($"Args: {string.Join(" ", args)}");
+
 #if !DEBUG
          try
          {
@@ -53,6 +56,8 @@ namespace PullDetachedRemote
                         InitLog();
                         foreach (var error in ex)
                            Log.Error($"Failed to parse: {error.Tag}");
+
+                        Log.Fatal("Failure processing args");
                      });
 #if !DEBUG
          }
