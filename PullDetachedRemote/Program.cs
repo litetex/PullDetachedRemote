@@ -38,9 +38,9 @@ namespace PullDetachedRemote
          {
             Log.Info($"Detected flag: '--{EXPECT_ESCAPED_INPUT}'; Fixing input...");
             for (int i = 0; i < args.Length; i++)
-               if (args[i].StartsWith('"') && args[i].EndsWith('"'))
+               if (args[i].StartsWith("\\\"") && args[i].EndsWith("\\\""))
                {
-                  var newArg = args[i][1..^1];
+                  var newArg = args[i][2..^2];
                   Log.Info($"Fixing '{args[i]}'->'{newArg}'");
                   args[i] = newArg;
                }
