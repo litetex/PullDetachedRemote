@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY PullDetachedRemote PullDetachedRemote
 
-RUN chmod +x PullDetachedRemote &&
+RUN chmod +x PullDetachedRemote && \
   chown -R 1001:1001 /app
 
 USER 1001
