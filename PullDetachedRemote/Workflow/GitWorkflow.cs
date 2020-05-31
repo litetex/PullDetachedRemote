@@ -71,7 +71,7 @@ namespace PullDetachedRemote.Workflow
 
          // Fetch
          var remoteOrigin = Repo.Network.Remotes["origin"];
-         Log.Info("Fetching origin");
+         Log.Info($"Fetching origin[url='{remoteOrigin.Url}', pushUrl='{remoteOrigin.PushUrl}']");
 
          try
          {
