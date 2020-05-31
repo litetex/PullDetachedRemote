@@ -25,7 +25,7 @@ namespace PullDetachedRemote.Config
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
-      /// Path to working repo; default = executable is in repo
+      /// Path to working repo
       /// </summary>
       /// <remarks>
       /// Required; default is workdir/gitrepo
