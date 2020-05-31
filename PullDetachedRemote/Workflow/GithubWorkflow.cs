@@ -56,7 +56,7 @@ namespace PullDetachedRemote.Workflow
 
          var rateLimit = Client.GetLastApiInfo()?.RateLimit;
          Log.Info($"Connection tested succesfully; " +
-            $"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString() ?? "N/A"})");
+            $"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"})");
 
          Log.Info("Done");
       }
