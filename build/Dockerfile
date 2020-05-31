@@ -5,9 +5,11 @@ LABEL "repository"="https://github.com/litetex/PullDetachedRemote"
 
 WORKDIR /app
 
-RUN chown -R 1001:1001 /app
+RUN addgroup -S app && adduser -S -G app app 
 
-USER 1001
+RUN chown -R app:app /app
+
+USER app
 
 COPY PullDetachedRemote PullDetachedRemote
 
@@ -16,6 +18,6 @@ USER root
 RUN chmod +x PullDetachedRemote
 
 # Execute at any cost deevaluated
-USER 1001
+USER app
 
 ENTRYPOINT ["/app/PullDetachedRemote"]
