@@ -73,19 +73,9 @@ namespace PullDetachedRemote.Workflow
          var remoteOrigin = Repo.Network.Remotes["origin"];
          Log.Info($"Fetching origin[url='{remoteOrigin.Url}', pushUrl='{remoteOrigin.PushUrl}']");
 
-         try
-         {
-            Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
-         }
-         catch(LibGit2SharpException ex)
-         {
-            if(ex.Message?.ToLower() == "too many redirects or authentication replays")
-            {
-               Log.Warn("Got an exception while fetching origin; Trying to refetch without auth", ex);
-               Fetch(Repo, remoteOrigin, new FetchOptions());
-            }
-            throw;
-         }
+         
+         //Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
+         
          Log.Info("Fetched origin successfully");
       }
 
