@@ -73,7 +73,6 @@ namespace PullDetachedRemote.Workflow
          var remoteOrigin = Repo.Network.Remotes["origin"];
          Log.Info("Fetching origin");
 
-         // TODO: Don't fetch all!
          try
          {
             Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
@@ -82,7 +81,7 @@ namespace PullDetachedRemote.Workflow
          {
             if(ex.Message?.ToLower() == "too many redirects or authentication replays")
             {
-               Log.Warn("Got an exception while fetching; Trying to refetch without auth", ex);
+               Log.Warn("Got an exception while fetching origin; Trying to refetch without auth", ex);
                Fetch(Repo, remoteOrigin, new FetchOptions());
             }
             throw;
@@ -92,6 +91,7 @@ namespace PullDetachedRemote.Workflow
 
       protected void Fetch(Repository repo, Remote remote, FetchOptions options)
       {
+         // TODO: Don't fetch all!
          Commands.Fetch(
               repo,
               remote.Name,
@@ -196,16 +196,8 @@ namespace PullDetachedRemote.Workflow
          {
             CredentialsProvider = UpstreamCredentialsHandler
          };
-
-         // TODO: Don't fetch all!
-         Commands.Fetch(
-            Repo,
-            UpstreamRemote.Name,
-            UpstreamRemote
-               .FetchRefSpecs
-               .Select(x => x.Specification),
-            fetchOptions,
-            "");
+         
+         Fetch(Repo, UpstreamRemote, fetchOptions);
          Log.Info($"Fetched upstream-remote successfully");
 
          UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{UpstreamRemote.Name}/{Config.UpstreamBranch}");
