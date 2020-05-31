@@ -5,11 +5,12 @@ LABEL "repository"="https://github.com/litetex/PullDetachedRemote"
 
 WORKDIR /app
 
-COPY PullDetachedRemote PullDetachedRemote
-
-RUN chmod +x PullDetachedRemote && \
-  chown -R 1001:1001 /app
+RUN chown -R 1001:1001 /app
 
 USER 1001
+
+COPY PullDetachedRemote PullDetachedRemote
+
+RUN chmod +x PullDetachedRemote
 
 ENTRYPOINT ["/app/PullDetachedRemote"]
