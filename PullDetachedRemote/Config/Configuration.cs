@@ -12,7 +12,7 @@ namespace PullDetachedRemote.Config
       /// Email for commits
       /// </summary>
       /// <remarks>
-      /// Optional; default "action@github.com"
+      /// Required
       /// </remarks>
       public string IdentityEmail { get; set; } = null;
 
@@ -20,7 +20,7 @@ namespace PullDetachedRemote.Config
       /// User for commits
       /// </summary>
       /// <remarks>
-      /// Optional; default "GitHub Action - nameofThisProject Version"
+      /// Optional; default "nameofThisProject Version"
       /// </remarks>
       public string IdentityUsername { get; set; } = null;
 

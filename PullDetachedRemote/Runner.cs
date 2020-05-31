@@ -38,6 +38,12 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.GitHubToken))
             throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
 
+         if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
+            throw new ArgumentException($"{nameof(Config.IdentityEmail)}[='{Config.IdentityEmail}'] is invalid");
+
+         if (string.IsNullOrWhiteSpace(Config.IdentityUsername))
+            Config.IdentityUsername = $"{Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version}";
+
          if (string.IsNullOrWhiteSpace(Config.UpstreamRepo) && Uri.TryCreate(Config.UpstreamRepo, UriKind.Absolute, out _))
             throw new ArgumentException($"{nameof(Config.UpstreamRepo)}[='{Config.UpstreamRepo}'] is invalid");
 
@@ -46,14 +52,6 @@ namespace PullDetachedRemote
 
          if (string.IsNullOrWhiteSpace(Config.UpstreamBranch))
             Config.UpstreamBranch = null; // Process it later!
-
-         if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
-            Config.IdentityEmail = "actions@github.com";
-
-         if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
-            Config.IdentityUsername = $"Github Action - {Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version}";
-
-
       }
 
       #endregion Init
