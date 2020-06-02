@@ -12,7 +12,7 @@ namespace PullDetachedRemote.Config
       /// Email for commits
       /// </summary>
       /// <remarks>
-      /// Optional; default "action@github.com"
+      /// Required
       /// </remarks>
       public string IdentityEmail { get; set; } = null;
 
@@ -20,12 +20,12 @@ namespace PullDetachedRemote.Config
       /// User for commits
       /// </summary>
       /// <remarks>
-      /// Optional; default "GitHub Action - nameofThisProject Version"
+      /// Optional; default "nameofThisProject Version"
       /// </remarks>
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
-      /// Path to working repo; default = executable is in repo
+      /// Path to working repo
       /// </summary>
       /// <remarks>
       /// Required; default is workdir/gitrepo
@@ -46,10 +46,10 @@ namespace PullDetachedRemote.Config
       public string OriginRepo { get; set; } = null;
 
       /// <summary>
-      /// Where to merge the PR into
+      /// The branch(name) to merge the PR into
       /// </summary>
       /// <remarks>
-      /// Optional; default is Github-Repo default-Branch
+      /// Optional; default is Github-Repos default-Branch
       /// </remarks>
       public string OriginBranch { get; set; }
 
@@ -65,7 +65,7 @@ namespace PullDetachedRemote.Config
       /// Detached remote branch that should be used.
       /// </summary>
       /// <remarks>
-      /// Optional; WARNING: It's recommend to set this branch, otherwise inperformant
+      /// Optional; WARNING: It's recommend to set this branch, otherwise the process may be inperformant
       /// </remarks>
       public string UpstreamBranch { get; set; }
 

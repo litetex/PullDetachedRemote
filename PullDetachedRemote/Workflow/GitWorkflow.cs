@@ -31,7 +31,7 @@ namespace PullDetachedRemote.Workflow
 
       public string OriginRepoUrl { get => OriginRemote.PushUrl; }
 
-      public string UpstreamRepoUrl { get => UpstreamRemote.PushUrl; }
+      public string UpstreamRepoUrl { get => UpstreamRemote?.PushUrl; }
 
       public string OriginUpdateBranchName { get => OriginUpdateBranch?.FriendlyName; }
 
@@ -71,18 +71,32 @@ namespace PullDetachedRemote.Workflow
 
          // Fetch
          var remoteOrigin = Repo.Network.Remotes["origin"];
-         Log.Info("Fetching origin");
+         Log.Info($"Fetching origin[url='{remoteOrigin.Url}', pushUrl='{remoteOrigin.PushUrl}']");
 
-         // TODO: Don't fetch all!
-         Commands.Fetch(
-           Repo,
-           remoteOrigin.Name,
-           remoteOrigin
-              .FetchRefSpecs
-              .Select(x => x.Specification),
-           new FetchOptions() { CredentialsProvider = OriginCredentialsHandler },
-           "");
+         /*
+          * TODO: https://github.com/litetex/PullDetachedRemote/issues/12
+          * Implement --unshallow when lib2git finally implements it (after 8 years lol) -> https://github.com/libgit2/libgit2sharp/issues/229
+          * Currently "git fetch --prune --unshallow" has to be run before this task...
+          */
+         Fetch(Repo, remoteOrigin, new FetchOptions() { CredentialsProvider = OriginCredentialsHandler });
+
          Log.Info("Fetched origin successfully");
+      }
+
+      protected void Fetch(Repository repo, Remote remote, FetchOptions options)
+      {
+         /*
+          * TODO: https://github.com/litetex/PullDetachedRemote/issues/13
+          * Don't fetch all, fetch only the corresponding branch
+          */
+         Commands.Fetch(
+              repo,
+              remote.Name,
+              remote
+                 .FetchRefSpecs
+                 .Select(x => x.Specification),
+              options,
+              "");
       }
 
       // NOTE: Directory.Delete is not working because some file are read-only...
@@ -159,7 +173,6 @@ namespace PullDetachedRemote.Workflow
       {
          UpstreamRemote = Repo.Network.Remotes.FirstOrDefault(x => x.PushUrl == Config.UpstreamRepo);
 
-
          if (UpstreamRemote != null)
          {
             Log.Info($"Found already existing upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
@@ -172,23 +185,14 @@ namespace PullDetachedRemote.Workflow
             Log.Info($"Added upstream remote '{UpstreamRemote.Name}'/'{UpstreamRemote.PushUrl}'");
          }
 
-
          Log.Info($"Using upstream-remote '{UpstreamRemote.Name}'<-'{Config.UpstreamRepo}'");
 
          FetchOptions fetchOptions = new FetchOptions()
          {
             CredentialsProvider = UpstreamCredentialsHandler
          };
-
-         // TODO: Don't fetch all!
-         Commands.Fetch(
-            Repo,
-            UpstreamRemote.Name,
-            UpstreamRemote
-               .FetchRefSpecs
-               .Select(x => x.Specification),
-            fetchOptions,
-            "");
+         
+         Fetch(Repo, UpstreamRemote, fetchOptions);
          Log.Info($"Fetched upstream-remote successfully");
 
          UpstreamBranch = Repo.Branches.First(b => b.FriendlyName == $"{UpstreamRemote.Name}/{Config.UpstreamBranch}");
@@ -287,15 +291,21 @@ namespace PullDetachedRemote.Workflow
 
       public void DetachUpstreamRemote()
       {
-         var toDetachremote = Repo.Network.Remotes.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
-         if (toDetachremote == null)
+         if(UpstreamRemote == null)
          {
-            Log.Debug($"{nameof(UpstreamRemote)} is already removed");
+            Log.Info($"{nameof(UpstreamRemote)} is not set");
             return;
          }
 
-         Repo.Network.Remotes.Remove(toDetachremote.Name);
+         var toDetachremote = Repo?.Network?.Remotes?.FirstOrDefault(r => r.Name == UpstreamRemote.Name);
+         if (toDetachremote == null)
+         {
+            Log.Info($"{nameof(UpstreamRemote)} is already removed (or the repo is null)");
+            return;
+         }
+
          Log.Info($"Removing {nameof(UpstreamRemote)} '{toDetachremote.Name}'");
+         Repo.Network.Remotes.Remove(toDetachremote.Name);
       }
 
       public void PushOriginUpdateBranch()
@@ -322,7 +332,9 @@ namespace PullDetachedRemote.Workflow
          Log.Info("Disposing");
          if (Repo != null)
          {
-            DetachUpstreamRemote();
+            if(UpstreamRemote != null)
+               DetachUpstreamRemote();
+
             Repo.Dispose();
 
             Log.Info($"Disposed {nameof(Repo)}");

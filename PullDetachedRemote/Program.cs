@@ -10,6 +10,8 @@ namespace PullDetachedRemote
 {
    public static class Program
    {
+      public const string EXPECT_ESCAPED_INPUT = "expectescapedinput";
+
       static void Main(string[] args)
       {
          Run(args);
@@ -33,7 +35,7 @@ namespace PullDetachedRemote
                SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
             }.Init();
 #endif
-            Parser.Default.ParseArguments<CmdOption>(args)
+         Parser.Default.ParseArguments<CmdOption>(args)
                      .WithParsed((opt) =>
                      {
                         var starter = new StartUp(opt);
@@ -53,6 +55,8 @@ namespace PullDetachedRemote
                         InitLog();
                         foreach (var error in ex)
                            Log.Error($"Failed to parse: {error.Tag}");
+
+                        Log.Fatal("Failure processing args");
                      });
 #if !DEBUG
          }
