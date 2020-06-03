@@ -8,3 +8,5 @@
 
 # PullDetachedRemote
 Creates a detached upstream branch and a corresponding PR from another repo and updates it automatically
+
+Docker base for [pull-detached-remote](https://github.com/litetex/pull-detached-remote)
