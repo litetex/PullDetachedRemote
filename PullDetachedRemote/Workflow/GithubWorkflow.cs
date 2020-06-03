@@ -38,25 +38,66 @@ namespace PullDetachedRemote.Workflow
 
       protected void ConstructorAsyncInitTask(CancellationToken ct)
       {
-         ct.ThrowIfCancellationRequested();
-
-         var phv = new ProductHeaderValue(Assembly.GetEntryAssembly().GetName().Name, Assembly.GetEntryAssembly().GetName().Version.ToString());
-         Client = new GitHubClient(phv)
+         Dictionary<string, string> tokens = new Dictionary<string, string>()
          {
-            Credentials = new Credentials(Config.GitHubToken)
+            // Use GithubToken primarily
+            { nameof(Config.GitHubToken), Config.GitHubToken },
+            { nameof(Config.GitHubPAT), Config.GitHubPAT },
          };
-         Log.Info($"Created GitHubClient['{phv}']");
 
-         var checkConTask = Client.Miscellaneous.GetRateLimits();
-         if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds,ct))
-            throw new TimeoutException("GitHubClient-ConCheck timed out");
+         bool success = false;
 
-         if (checkConTask.Result == null)
-            throw new InvalidOperationException("GitHubClient-ConCheck returned invalid data");
+         foreach (KeyValuePair<string, string> token in tokens)
+         {
+            if(string.IsNullOrWhiteSpace(token.Value))
+            {
+               Log.Info($"Token '{token.Key}' is invalid using next one");
+               continue;
+            }
 
-         var rateLimit = Client.GetLastApiInfo()?.RateLimit;
-         Log.Info($"Connection tested succesfully; " +
-            $"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"})");
+            Log.Info($"Trying to authenticated with '{token.Key}'=****");
+
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+               var phv = new ProductHeaderValue(Assembly.GetEntryAssembly().GetName().Name, Assembly.GetEntryAssembly().GetName().Version.ToString());
+               Client = new GitHubClient(phv)
+               {
+                  Credentials = new Credentials(token.Value)
+               };
+               Log.Info($"Created GitHubClient['{phv}']");
+
+               var checkConTask = Client.Miscellaneous.GetRateLimits();
+               if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds, ct))
+                  throw new TimeoutException("GitHubClient-ConCheck timed out");
+
+               if (checkConTask.Result == null)
+                  throw new InvalidOperationException("GitHubClient-ConCheck returned invalid data");
+
+               var rateLimit = Client.GetLastApiInfo()?.RateLimit;
+               Log.Info($"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"})");
+
+               Log.Info($"Connection tested succesfully using '{token.Key}'");
+
+               // Sucess
+               success = true;
+               break;
+            }
+            catch(OperationCanceledException)
+            {
+               throw;
+            }
+            catch(Exception ex)
+            {
+               Log.Warn("Authentification failed", ex);
+            }
+         }
+
+         if (!success)
+         {
+            Log.Info("Init failed!");
+            throw new InvalidOperationException("Failed to establish connectivity with api");
+         }
 
          Log.Info("Done");
       }
@@ -69,7 +110,7 @@ namespace PullDetachedRemote.Workflow
 
             try
             {
-               if (!AsyncConstructTask.Wait(TimeSpan.FromSeconds(20)))
+               if (!AsyncConstructTask.Wait(TimeSpan.FromSeconds(25)))
                   throw new TimeoutException($"{nameof(AsyncConstructTask)} took to long");
             }
             finally
@@ -84,9 +125,11 @@ namespace PullDetachedRemote.Workflow
          if (!GetRepoFrom(originRemote))
             throw new ArgumentException("Unable to get GH-Repo from remote origin");
 
-         Log.Info($"Using Repo[Owner='{Repo.Owner.Login}', Name='{Repo.Name}', URL='{Repo.CloneUrl}']");
+         Log.Info($"Using Repo[Owner='{Repo.Owner.Login}', Name='{Repo.Name}', CloneUrl='{Repo.CloneUrl}']");
 
          TargetPRBranchName = Config.OriginBranch ?? Repo.DefaultBranch;
+
+         Log.Info($"Targeting branch for PR is '{TargetPRBranchName}'");
       }
 
       protected bool GetRepoFrom(string originRemote)
@@ -162,8 +205,8 @@ namespace PullDetachedRemote.Workflow
       {
          PullRequest = Client.PullRequest.GetAllForRepository(Repo.Id)
             .Result
-            .FirstOrDefault(pr => 
-               pr.Base.Ref == TargetPRBranchName && 
+            .FirstOrDefault(pr =>
+               pr.Base.Ref == TargetPRBranchName &&
                pr.Head.Ref == sourceBranchName);
 
          if (PullRequest != null)
@@ -217,7 +260,7 @@ namespace PullDetachedRemote.Workflow
                $"</details>\r\n" +
                $"{afterStatus}",
          }).Result;
-         Log.Info($"Updated PR[ID='{PullRequest.Id}']: Body:\r\n{PullRequest.Body}");
+         Log.Info($"Updated PR[ID='{PullRequest.Id}']");
       }
 
       public void Dispose()
@@ -228,7 +271,7 @@ namespace PullDetachedRemote.Workflow
          {
             AsyncConstructCancel.Cancel();
 
-            if(AsyncConstructTask.IsCompleted)
+            if (AsyncConstructTask.IsCompleted)
                AsyncConstructTask.Dispose();
             AsyncConstructTask = null;
             Log.Info($"Disposed {nameof(AsyncConstructTask)}");

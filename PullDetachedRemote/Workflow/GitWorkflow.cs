@@ -153,11 +153,12 @@ namespace PullDetachedRemote.Workflow
 
          try
          {
+            // TODO: Shallow clone this
             using var repo = new Repository(
                Repository.Clone(Config.UpstreamRepo, tempFilesystemStructure, new CloneOptions()
                {
                   Checkout = false,
-                  CredentialsProvider = UpstreamCredentialsHandler
+                  CredentialsProvider = UpstreamCredentialsHandler,
                })
             );
             return repo.Branches.SingleOrDefault(x => x.IsCurrentRepositoryHead)?.FriendlyName;

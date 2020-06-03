@@ -92,6 +92,7 @@ namespace PullDetachedRemote
          };
 
          cps.SetStringSecret(() => CmdOption.GITHUB_TOKEN, v => Config.GitHubToken = v, nameof(Config.GitHubToken));
+         cps.SetStringSecret(() => CmdOption.GITHUB_PAT, v => Config.GitHubPAT = v, nameof(Config.GitHubPAT));
          cps.SetStringSecret(() => CmdOption.DETACHED_CREDS_PRINCIPAL, v => Config.DetachedCredsPrinicipal = v, nameof(Config.DetachedCredsPrinicipal));
          cps.SetStringSecret(() => CmdOption.DETACHED_CREDS_PW, v => Config.DetachedCredsPassword = v, nameof(Config.DetachedCredsPassword));
 
@@ -119,6 +120,7 @@ namespace PullDetachedRemote
          };
 
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("GITHUB_TOKEN"), v => Config.GitHubToken = v, nameof(Config.GitHubToken));
+         cps.SetStringSecret(() => Environment.GetEnvironmentVariable("GITHUB_PAT"), v => Config.GitHubPAT = v, nameof(Config.GitHubPAT));
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("DETACHED_CREDS_PRINCIPAL"), v => Config.DetachedCredsPrinicipal = v, nameof(Config.DetachedCredsPrinicipal));
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("DETACHED_CREDS_PW"), v => Config.DetachedCredsPassword = v, nameof(Config.DetachedCredsPassword));
       }

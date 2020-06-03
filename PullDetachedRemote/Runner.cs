@@ -35,8 +35,8 @@ namespace PullDetachedRemote
 
       private void Init()
       {
-         if (string.IsNullOrWhiteSpace(Config.GitHubToken))
-            throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.GitHubPAT))
+            throw new ArgumentException($"{nameof(Config.GitHubPAT)}[='****'] is invalid");
 
          if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
             throw new ArgumentException($"{nameof(Config.IdentityEmail)}[='{Config.IdentityEmail}'] is invalid");
@@ -73,7 +73,7 @@ namespace PullDetachedRemote
                   (url, usernameFromUrl, types) =>
                       new UsernamePasswordCredentials()
                       {
-                         Username = Config.GitHubToken,
+                         Username = Config.GitHubPAT,
                          Password = ""
                       });
 
@@ -81,7 +81,7 @@ namespace PullDetachedRemote
             if(Config.UpstreamRepoUseGitHubCreds)
             {
                upstreamCredentialsHandler = originCredentialsHandler;
-               Log.Info($"Will auth upstream-remote with GITHUB_TOKEN");
+               Log.Info($"Will auth upstream-remote with GITHUB_PAT");
             }
             else if (string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
             {
@@ -193,7 +193,7 @@ namespace PullDetachedRemote
       {
          if(Config.UpstreamBranch == null)
          {
-            Log.Info("Auto detecting default upstream branch... May took some time");
+            Log.Warn($"{nameof(Config.UpstreamBranch)} is not set! auto detecting default upstream branch... May take some time and memory");
 
             Config.UpstreamBranch = gitWorkflow.GetDefaultUpstreamBranch();
 

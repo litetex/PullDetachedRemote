@@ -78,14 +78,34 @@ namespace PullDetachedRemote.Config
       public string OriginUpdateBranch { get; set; }
 
       /// <summary>
-      /// GITHUB_TOKEN
+      /// GITHUB_TOKEN <para/>
+      /// used for:
+      /// <list type="bullet">
+      ///   <item>the communication with the Github-API (primary)</item>
+      /// </list>
+      /// <para/>
+      /// NOTE: You can't write to the current repo
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
+      /// <remarks>
+      /// Optional; If not set, <see cref="Configuration.GitHubPAT"/> is used
+      /// </remarks>
+      [YamlIgnore]
+      public string GitHubToken { get; set; } = null;
+
+      /// <summary>
+      /// GITHUB_Personal Access Key <para/>
+      /// used for:
+      /// <list type="bullet">
+      ///   <item>read/write operations in Repositories</item>
+      ///   <item>the communication with the Github-API (fallback; NOTE: The token owner wil be the pull request creator)</item>
+      /// </list>
+      /// </summary>
       /// <remarks>
       /// Required
       /// </remarks>
       [YamlIgnore]
-      public string GitHubToken { get; set; } = null;
+      public string GitHubPAT {get; set;} = null;
 
       /// <summary>
       /// if true uses <see cref="GitHubToken"/> for the <see cref="UpstreamRepo"/>; default value is true
