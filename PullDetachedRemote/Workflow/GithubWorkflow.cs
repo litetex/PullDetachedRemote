@@ -14,7 +14,9 @@ namespace PullDetachedRemote.Workflow
    {
       protected Config.Configuration Config { get; set; }
 
-      protected GitHubClient Client { get; set; }
+      protected GitHubClient GeneralClient { get; set; }
+
+      protected GitHubClient RepoClient { get; set; }
 
       protected Repository Repo { get; set; }
 
@@ -38,68 +40,55 @@ namespace PullDetachedRemote.Workflow
 
       protected void ConstructorAsyncInitTask(CancellationToken ct)
       {
-         Dictionary<string, string> tokens = new Dictionary<string, string>()
+         Log.Info("Starting Init task");
+
+         GeneralClient = AuthenticateClient(Config.GitHubPAT, ct);
+
+         if (!string.IsNullOrWhiteSpace(Config.GitHubToken))
          {
-            // Use GithubToken primarily
-            { nameof(Config.GitHubToken), Config.GitHubToken },
-            { nameof(Config.GitHubPAT), Config.GitHubPAT },
-         };
-
-         bool success = false;
-
-         foreach (KeyValuePair<string, string> token in tokens)
-         {
-            if(string.IsNullOrWhiteSpace(token.Value))
-            {
-               Log.Info($"Token '{token.Key}' is invalid using next one");
-               continue;
-            }
-
-            Log.Info($"Trying to authenticated with '{token.Key}'=****");
-
-            ct.ThrowIfCancellationRequested();
             try
             {
-               var phv = new ProductHeaderValue(Assembly.GetEntryAssembly().GetName().Name, Assembly.GetEntryAssembly().GetName().Version.ToString());
-               Client = new GitHubClient(phv)
-               {
-                  Credentials = new Credentials(token.Value)
-               };
-               Log.Info($"Created GitHubClient['{phv}']");
-
-               var checkConTask = Client.Miscellaneous.GetRateLimits();
-               if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds, ct))
-                  throw new TimeoutException("GitHubClient-ConCheck timed out");
-
-               if (checkConTask.Result == null)
-                  throw new InvalidOperationException("GitHubClient-ConCheck returned invalid data");
-
-               var rateLimit = Client.GetLastApiInfo()?.RateLimit;
-               Log.Info($"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"})");
-
-               Log.Info($"Connection tested succesfully using '{token.Key}'");
-
-               // Sucess
-               success = true;
-               break;
+               RepoClient = AuthenticateClient(Config.GitHubToken, ct);
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                throw;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-               Log.Warn("Authentification failed", ex);
+               Log.Warn($"Authentification failed for '{nameof(Config.GitHubToken)}'", ex);
             }
          }
-
-         if (!success)
-         {
-            Log.Info("Init failed!");
-            throw new InvalidOperationException("Failed to establish connectivity with api");
-         }
+         RepoClient ??= GeneralClient;
 
          Log.Info("Done");
+      }
+
+      protected GitHubClient AuthenticateClient(string token, CancellationToken ct)
+      {
+         if (string.IsNullOrWhiteSpace(token))
+            throw new ArgumentException($"Token is invalid using next one");
+
+         ct.ThrowIfCancellationRequested();
+
+         var phv = new ProductHeaderValue(Assembly.GetEntryAssembly().GetName().Name, Assembly.GetEntryAssembly().GetName().Version.ToString());
+         var client = new GitHubClient(phv)
+         {
+            Credentials = new Credentials(token)
+         };
+         Log.Info($"Created GitHubClient['{phv}']");
+
+         var checkConTask = client.Miscellaneous.GetRateLimits();
+         if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds, ct))
+            throw new TimeoutException("GitHubClient-ConCheck timed out");
+
+         if (checkConTask.Result == null)
+            throw new InvalidOperationException("GitHubClient-ConCheck returned invalid data");
+
+         var rateLimit = client.GetLastApiInfo()?.RateLimit;
+         Log.Info($"RateLimit: {rateLimit?.Remaining.ToString() ?? "N/A"}/{rateLimit?.Limit.ToString() ?? "N/A"} (will be reset at {rateLimit?.Reset.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"})");
+
+         return client;
       }
 
       public void Init(string originRemote)
@@ -149,11 +138,11 @@ namespace PullDetachedRemote.Workflow
          Log.Warn("Couldn't parse origin remote. Using fallback");
 
          var userRepos = new List<Repository>();
-         userRepos.AddRange(Client.Repository.GetAllForCurrent().Result);
+         userRepos.AddRange(GeneralClient.Repository.GetAllForCurrent().Result);
 
-         foreach (Organization org in Client.Organization.GetAllForCurrent().Result)
+         foreach (Organization org in GeneralClient.Organization.GetAllForCurrent().Result)
          {
-            var orgResults = Client.Repository.GetAllForOrg(org.Login).Result;
+            var orgResults = GeneralClient.Repository.GetAllForOrg(org.Login).Result;
             if (orgResults != null && orgResults.Count > 0)
                userRepos.AddRange(orgResults);
          }
@@ -182,7 +171,7 @@ namespace PullDetachedRemote.Workflow
       {
          try
          {
-            var repo = Client.Repository.Get(owner, repoName).Result;
+            var repo = GeneralClient.Repository.Get(owner, repoName).Result;
             if (!Validate(repo))
                return false;
 
@@ -203,7 +192,7 @@ namespace PullDetachedRemote.Workflow
 
       public bool EnsurePullRequestCreated(string upstreamRepoUrl, string sourceBranchName)
       {
-         PullRequest = Client.PullRequest.GetAllForRepository(Repo.Id)
+         PullRequest = RepoClient.PullRequest.GetAllForRepository(Repo.Id)
             .Result
             .FirstOrDefault(pr =>
                pr.Base.Ref == TargetPRBranchName &&
@@ -218,7 +207,7 @@ namespace PullDetachedRemote.Workflow
          Log.Info($"Creating PullRequest '{sourceBranchName}'->'{TargetPRBranchName}'");
          var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, TargetPRBranchName);
 
-         PullRequest = Client.PullRequest.Create(Repo.Id, newPr).Result;
+         PullRequest = RepoClient.PullRequest.Create(Repo.Id, newPr).Result;
 
          Log.Info($"Created PullRequest '{sourceBranchName}'->'{TargetPRBranchName}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
 
@@ -250,7 +239,7 @@ namespace PullDetachedRemote.Workflow
 
          Log.Info($"Updating PR[ID='{PullRequest.Id}']");
 
-         PullRequest = Client.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
+         PullRequest = RepoClient.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
             Body = $"{beforeStatus}" +
                $"\r\n" +
@@ -278,7 +267,8 @@ namespace PullDetachedRemote.Workflow
          }
          AsyncConstructCancel.Dispose();
 
-         Client = null;
+         RepoClient = null;
+         GeneralClient = null;
       }
    }
 }

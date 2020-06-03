@@ -81,7 +81,7 @@ namespace PullDetachedRemote.Config
       /// GITHUB_TOKEN <para/>
       /// used for:
       /// <list type="bullet">
-      ///   <item>the communication with the Github-API (primary)</item>
+      ///   <item>communication with the Github-API (context: repo only; primary)</item>
       /// </list>
       /// <para/>
       /// NOTE: You can't write to the current repo
@@ -98,7 +98,7 @@ namespace PullDetachedRemote.Config
       /// used for:
       /// <list type="bullet">
       ///   <item>read/write operations in Repositories</item>
-      ///   <item>the communication with the Github-API (fallback; NOTE: The token owner wil be the pull request creator)</item>
+      ///   <item>communication with the Github-API (general/fallback; NOTE: The token owner wil be the pull request creator)</item>
       /// </list>
       /// </summary>
       /// <remarks>
