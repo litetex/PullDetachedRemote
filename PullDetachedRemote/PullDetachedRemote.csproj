@@ -22,7 +22,6 @@
     <PackageReference Include="Litetex.CoreFramework.Config.Yaml" Version="2020.5.21.183627" />
     <PackageReference Include="Litetex.CoreFramework.CrashLogging" Version="2020.5.21.183627" />
     <PackageReference Include="Octokit" Version="0.47.0" />
-    <PackageReference Include="YamlDotNet" Version="8.1.1" />
   </ItemGroup>
 
   <ItemGroup>

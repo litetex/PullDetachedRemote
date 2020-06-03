@@ -42,12 +42,6 @@
         "resolved": "0.47.0",
         "contentHash": "q1TWsMEjxG7Eb7YFrXm3MWgSPsMvPKxrIF//tuUPd9i/SS/fG7PerKr088E8AOoAFcHqMqouSrW0iAg2WgskDA=="
       },
-      "YamlDotNet": {
-        "type": "Direct",
-        "requested": "[8.1.1, )",
-        "resolved": "8.1.1",
-        "contentHash": "JXPO7bjUUeDIXgzlLAdNFCzrxBxBzYBbXy3MEp2uWIY7KK8LoNogaPhSg2mLuzCN5flp1ydeVqm+4j3tkP0pow=="
-      },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
         "resolved": "2.0.306",
@@ -329,6 +323,11 @@
           "Microsoft.NETCore.Targets": "1.0.1",
           "System.Runtime": "4.1.0"
         }
+      },
+      "YamlDotNet": {
+        "type": "Transitive",
+        "resolved": "8.1.1",
+        "contentHash": "JXPO7bjUUeDIXgzlLAdNFCzrxBxBzYBbXy3MEp2uWIY7KK8LoNogaPhSg2mLuzCN5flp1ydeVqm+4j3tkP0pow=="
       }
     }
   }
