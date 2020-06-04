@@ -1,7 +1,7 @@
-﻿using CoreFramework.Config;
+﻿using CoreFramework.Base.Util;
+using CoreFramework.Config;
 using PullDetachedRemote.CMD;
 using PullDetachedRemote.Config;
-using PullDetachedRemote.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -105,7 +105,7 @@ namespace PullDetachedRemote
          cps.SetString(() => CmdOption.UpstreamRepo, v => Config.UpstreamRepo = v, nameof(Config.UpstreamRepo));
          cps.SetString(() => CmdOption.UpstreamBranch, v => Config.UpstreamBranch = v, nameof(Config.UpstreamBranch));
          cps.SetString(() => CmdOption.OriginUpdateBranch, v => Config.OriginUpdateBranch = v, nameof(Config.OriginUpdateBranch));
-         cps.SetBool(() => CmdOption.UpstreamRepoUseGitHubCreds, v => Config.UpstreamRepoUseGitHubCreds = v, nameof(Config.UpstreamRepoUseGitHubCreds));
+         cps.SetEnum<UpstreamRepoCredentialsMode>(() => CmdOption.UpstreamCredMode, v => Config.UpstreamCredMode = v, nameof(Config.UpstreamCredMode));
       }
 
 

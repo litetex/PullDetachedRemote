@@ -78,22 +78,47 @@ namespace PullDetachedRemote
                       });
 
             CredentialsHandler upstreamCredentialsHandler = null;
-            if(Config.UpstreamRepoUseGitHubCreds)
+
+            switch(Config.UpstreamCredMode)
             {
-               upstreamCredentialsHandler = originCredentialsHandler;
-               Log.Info($"Will auth upstream-remote with GITHUB_PAT");
-            }
-            else if (string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
-            {
-               upstreamCredentialsHandler = new CredentialsHandler(
+               case UpstreamRepoCredentialsMode.AUTO:
+                  Log.Info($"Automatically determining auth of upstream-remote");
+
+#pragma warning disable S907 // "goto" statement should not be used
+                  if (Config.UpstreamRepo.StartsWith("https://github.com/"))
+                     goto case UpstreamRepoCredentialsMode.GITHUB;
+                  else if (!string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
+                     goto case UpstreamRepoCredentialsMode.CUSTOM;
+                  else
+                     goto default;
+#pragma warning restore S907 // "goto" statement should not be used
+
+               case UpstreamRepoCredentialsMode.GITHUB:
+                  Log.Info($"Will auth upstream-remote with GitHub credentials");
+
+                  upstreamCredentialsHandler = originCredentialsHandler;
+
+                  break;
+
+               case UpstreamRepoCredentialsMode.CUSTOM:
+                  Log.Info($"Will auth upstream-remote with custom credentials");
+
+                  upstreamCredentialsHandler = new CredentialsHandler(
                    (url, usernameFromUrl, types) =>
                        new UsernamePasswordCredentials()
                        {
                           Username = Config.DetachedCredsPrinicipal,
                           Password = Config.DetachedCredsPassword ?? ""
                        });
-               Log.Info($"Will auth upstream-remote with custom credentials");
+
+                  break;
+
+               default:
+                  Log.Info($"Will auth upstream-remote with NO credentials");
+
+                  break;
             }
+
 
             InitRepo();
 

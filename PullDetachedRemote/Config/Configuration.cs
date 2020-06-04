@@ -108,9 +108,11 @@ namespace PullDetachedRemote.Config
       public string GitHubPAT {get; set;} = null;
 
       /// <summary>
-      /// if true uses <see cref="GitHubToken"/> for the <see cref="UpstreamRepo"/>; default value is true
-      /// </summary>
-      public bool UpstreamRepoUseGitHubCreds { get; set; } = true;
+      /// <see cref="UpstreamRepoCredentialsMode"/>
+      /// <remarks>
+      /// Optional
+      /// </remarks>
+      public UpstreamRepoCredentialsMode UpstreamCredMode { get; set; } = UpstreamRepoCredentialsMode.AUTO;
 
       /// <summary>
       /// DETACHED_CREDS_PRINCIPAL <para/>

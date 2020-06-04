@@ -153,7 +153,10 @@ namespace PullDetachedRemote.Workflow
 
          try
          {
-            // TODO: Shallow clone this
+            /*
+             * TODO: https://github.com/litetex/PullDetachedRemote/issues/19
+             * Shallow clone this
+             */
             using var repo = new Repository(
                Repository.Clone(Config.UpstreamRepo, tempFilesystemStructure, new CloneOptions()
                {
