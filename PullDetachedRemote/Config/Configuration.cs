@@ -78,19 +78,41 @@ namespace PullDetachedRemote.Config
       public string OriginUpdateBranch { get; set; }
 
       /// <summary>
-      /// GITHUB_TOKEN
+      /// GITHUB_TOKEN <para/>
+      /// used for:
+      /// <list type="bullet">
+      ///   <item>communication with the Github-API (context: repo only; primary)</item>
+      /// </list>
+      /// <para/>
+      /// NOTE: You can't write to the current repo
       /// </summary>
       /// <seealso cref="https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token"/>
       /// <remarks>
-      /// Required
+      /// Optional; If not set, <see cref="Configuration.GitHubPAT"/> is used
       /// </remarks>
       [YamlIgnore]
       public string GitHubToken { get; set; } = null;
 
       /// <summary>
-      /// if true uses <see cref="GitHubToken"/> for the <see cref="UpstreamRepo"/>; default value is true
+      /// GITHUB_Personal Access Key <para/>
+      /// used for:
+      /// <list type="bullet">
+      ///   <item>read/write operations in Repositories</item>
+      ///   <item>communication with the Github-API (general/fallback; NOTE: The token owner wil be the pull request creator)</item>
+      /// </list>
       /// </summary>
-      public bool UpstreamRepoUseGitHubCreds { get; set; } = true;
+      /// <remarks>
+      /// Required
+      /// </remarks>
+      [YamlIgnore]
+      public string GitHubPAT {get; set;} = null;
+
+      /// <summary>
+      /// <see cref="UpstreamRepoCredentialsMode"/>
+      /// <remarks>
+      /// Optional
+      /// </remarks>
+      public UpstreamRepoCredentialsMode UpstreamCredMode { get; set; } = UpstreamRepoCredentialsMode.AUTO;
 
       /// <summary>
       /// DETACHED_CREDS_PRINCIPAL <para/>

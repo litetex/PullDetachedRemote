@@ -35,8 +35,8 @@ namespace PullDetachedRemote
 
       private void Init()
       {
-         if (string.IsNullOrWhiteSpace(Config.GitHubToken))
-            throw new ArgumentException($"{nameof(Config.GitHubToken)}[='****'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.GitHubPAT))
+            throw new ArgumentException($"{nameof(Config.GitHubPAT)}[='****'] is invalid");
 
          if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
             throw new ArgumentException($"{nameof(Config.IdentityEmail)}[='{Config.IdentityEmail}'] is invalid");
@@ -73,27 +73,52 @@ namespace PullDetachedRemote
                   (url, usernameFromUrl, types) =>
                       new UsernamePasswordCredentials()
                       {
-                         Username = Config.GitHubToken,
+                         Username = Config.GitHubPAT,
                          Password = ""
                       });
 
             CredentialsHandler upstreamCredentialsHandler = null;
-            if(Config.UpstreamRepoUseGitHubCreds)
+
+            switch(Config.UpstreamCredMode)
             {
-               upstreamCredentialsHandler = originCredentialsHandler;
-               Log.Info($"Will auth upstream-remote with GITHUB_TOKEN");
-            }
-            else if (string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
-            {
-               upstreamCredentialsHandler = new CredentialsHandler(
+               case UpstreamRepoCredentialsMode.AUTO:
+                  Log.Info($"Automatically determining auth of upstream-remote");
+
+#pragma warning disable S907 // "goto" statement should not be used
+                  if (Config.UpstreamRepo.StartsWith("https://github.com/"))
+                     goto case UpstreamRepoCredentialsMode.GITHUB;
+                  else if (!string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
+                     goto case UpstreamRepoCredentialsMode.CUSTOM;
+                  else
+                     goto default;
+#pragma warning restore S907 // "goto" statement should not be used
+
+               case UpstreamRepoCredentialsMode.GITHUB:
+                  Log.Info($"Will auth upstream-remote with GitHub credentials");
+
+                  upstreamCredentialsHandler = originCredentialsHandler;
+
+                  break;
+
+               case UpstreamRepoCredentialsMode.CUSTOM:
+                  Log.Info($"Will auth upstream-remote with custom credentials");
+
+                  upstreamCredentialsHandler = new CredentialsHandler(
                    (url, usernameFromUrl, types) =>
                        new UsernamePasswordCredentials()
                        {
                           Username = Config.DetachedCredsPrinicipal,
                           Password = Config.DetachedCredsPassword ?? ""
                        });
-               Log.Info($"Will auth upstream-remote with custom credentials");
+
+                  break;
+
+               default:
+                  Log.Info($"Will auth upstream-remote with NO credentials");
+
+                  break;
             }
+
 
             InitRepo();
 
@@ -193,7 +218,7 @@ namespace PullDetachedRemote
       {
          if(Config.UpstreamBranch == null)
          {
-            Log.Info("Auto detecting default upstream branch... May took some time");
+            Log.Warn($"{nameof(Config.UpstreamBranch)} is not set! auto detecting default upstream branch... May take some time and memory");
 
             Config.UpstreamBranch = gitWorkflow.GetDefaultUpstreamBranch();
 

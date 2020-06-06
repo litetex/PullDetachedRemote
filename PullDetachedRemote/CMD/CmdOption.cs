@@ -22,19 +22,25 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.Configuration.GitHubToken"/>
       /// </summary>
-      [Option('g', "GITHUB_TOKEN", HelpText = "Preferred way: Set them via environment")]
+      [Option("GITHUB_TOKEN", HelpText = "Preferred way: Set via environment")]
       public string GITHUB_TOKEN { get; set; } = null;
+
+      /// <summary>
+      /// <see cref="Config.Configuration.GitHubPAT"/>
+      /// </summary>
+      [Option('g', "GITHUB_PAT", HelpText = "Preferred way: Set via environment")]
+      public string GITHUB_PAT { get; set; } = null;
 
       /// <summary>
       /// <see cref="Config.Configuration.DetachedCredsPrinicipal"/>
       /// </summary>
-      [Option("DETACHED_CREDS_PRINCIPAL", HelpText = "Preferred way: Set them via environment")]
+      [Option("DETACHED_CREDS_PRINCIPAL", HelpText = "Preferred way: Set via environment")]
       public string DETACHED_CREDS_PRINCIPAL { get; set; } = null;
 
       /// <summary>
       /// <see cref="Config.Configuration.DetachedCredsPassword"/>
       /// </summary>
-      [Option("DETACHED_CREDS_PW", HelpText = "Preferred way: Set them via environment")]
+      [Option("DETACHED_CREDS_PW", HelpText = "Preferred way: Set via environment")]
       public string DETACHED_CREDS_PW { get; set; } = null;
 
       /// <summary>
@@ -58,7 +64,7 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.Configuration.CloneMode"/>
       /// </summary>
-      [Option("clonemode", HelpText = "Expected values are the enum-keys name")]
+      [Option("clonemode", HelpText = "Expected values are the enum-keys names")]
       public string CloneMode { get; set; }
 
       /// <summary>
@@ -94,8 +100,8 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.Configuration.UpstreamRepoUseGitHubCreds"/>
       /// </summary>
-      [Option("upstreamrepousegithubcreds", HelpText = "Valid inputs are true/false or 0/1")]
-      public string UpstreamRepoUseGitHubCreds { get; set; }
+      [Option("upstreamcredmode", HelpText = "Expected values are the enum-keys names")]
+      public string UpstreamCredMode { get; set; }
 
       #endregion SetableBuildProperties
    }
