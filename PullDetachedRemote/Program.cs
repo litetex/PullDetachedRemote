@@ -1,10 +1,11 @@
 ﻿using CommandLine;
-using CoreFramework.CrashLogging;
-using CoreFramework.Logging.Initalizer;
-using CoreFramework.Logging.Initalizer.Impl;
 using PullDetachedRemote.CMD;
+using Serilog;
 using System;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PullDetachedRemote
 {
@@ -19,22 +20,28 @@ namespace PullDetachedRemote
 
       public static void Run(string[] args)
       {
-         CurrentLoggerInitializer.Set(new DefaultLoggerInitializer(new DefaultLoggerInitializerConfig()
-         {
-            WriteConsole = true,
-            WriteFile = false,
-            CreateLogFilePathOnStartup = false,
-         }));
-         InitLog();
+         Console.WriteLine($"****** {Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version} ******");
 
-#if !DEBUG
+         var logConf =
+            new LoggerConfiguration()
+            .Enrich.WithThreadId()
+            .MinimumLevel.Information()
+            .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss,fff} {Level:u3} {ThreadId,-2} {Message:lj}{NewLine}{Exception}");
+
+         Serilog.Log.Logger = logConf.CreateLogger();
+
+         AppDomain.CurrentDomain.ProcessExit += (s, ev) =>
+         {
+            Log.Info("Shutting down logger; Flushing...");
+            Serilog.Log.CloseAndFlush();
+         };
+
+//#if !DEBUG
          try
          {
-            new CrashDetector()
-            {
-               SupplyLoggerInitalizer = () => CurrentLoggerInitializer.Current
-            }.Init();
-#endif
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+//#endif
          Parser.Default.ParseArguments<CmdOption>(args)
                      .WithParsed((opt) =>
                      {
@@ -52,25 +59,34 @@ namespace PullDetachedRemote
                           )
                            return;
 
-                        InitLog();
                         foreach (var error in ex)
                            Log.Error($"Failed to parse: {error.Tag}");
 
                         Log.Fatal("Failure processing args");
                      });
-#if !DEBUG
+//#if !DEBUG
          }
          catch (Exception ex)
          {
-            InitLog();
             Log.Fatal(ex);
          }
-#endif
+//#endif
       }
 
-      static void InitLog(Action<DefaultLoggerInitializer> initAction = null)
+      private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs ev)
       {
-         CurrentLoggerInitializer.InitLogging(il => initAction?.Invoke((DefaultLoggerInitializer)il));
+         try
+         {  
+            Log.Fatal("Detected UnhandledException");
+            if (ev.ExceptionObject is Exception ex)
+               Log.Fatal("Run into unhandled error", ex);
+            else
+               Log.Fatal($"Run into unhandled error: {ev.ExceptionObject}");
+         }
+         catch (Exception ex)
+         {
+            Console.Error.WriteLine(ex);
+         }
       }
    }
 }
