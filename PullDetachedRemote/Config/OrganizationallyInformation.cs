@@ -29,7 +29,7 @@ namespace PullDetachedRemote.Config
       /// Optional;
       /// max 10 Assignees
       /// </remarks>
-      public List<string> Assignee { get; set; } = new List<string>();
+      public List<string> Assignees { get; set; } = new List<string>();
 
       /// <summary>
       /// Reviewers for the Pull Request on GitHub

@@ -207,7 +207,7 @@ namespace PullDetachedRemote.Workflow
 
          Log.Info($"Creating PullRequest '{sourceBranchName}'->'{TargetPRBranchName}'");
          var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, TargetPRBranchName);
-         
+
          PullRequest = RepoClient.PullRequest.Create(Repo.Id, newPr).Result;
 
          Log.Info($"Created PullRequest '{sourceBranchName}'->'{TargetPRBranchName}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
@@ -255,17 +255,89 @@ namespace PullDetachedRemote.Workflow
 
       public void SetOrgaInfoToNewPR(StatusReport status)
       {
+         Issue issue = null;
+         if (Config.OrgaInfo.Assignees != null && Config.OrgaInfo.Assignees.Count > 0 &&
+            Config.OrgaInfo.Labels != null && Config.OrgaInfo.Labels.Count > 0)
+            issue = RepoClient.Issue.Get(Repo.Id, PullRequest.Number).Result;
+
+         var assigneeTask = Task.Run(() =>
+         {
+            if(Config.OrgaInfo.Assignees == null || Config.OrgaInfo.Assignees.Count == 0)
+            {
+               Log.Info("No Assignees to add");
+               return;
+            }
+
+            try
+            {
+               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Name, Repo.Name, PullRequest.Number, new AssigneesUpdate(ProcessAssignees(issue)));
+            }
+            catch (Exception ex)
+            {
+               Log.Error("Unable to add assignees", ex);
+            }
+         });
+
+         var labelsTask = Task.Run(() =>
+         {
+            if (Config.OrgaInfo.Labels == null || Config.OrgaInfo.Labels.Count == 0)
+            {
+               Log.Info("No Labels to add");
+               return;
+            }
+
+            try
+            {
+               RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, ProcessLabels(issue).ToArray());
+            }
+            catch (Exception ex)
+            {
+               Log.Error("Unable to add labels", ex);
+            }
+         });
+
+
+
+         var prTask = Task.Run(() =>
+         {
+            if (Config.OrgaInfo.Reviewers == null || Config.OrgaInfo.Labels.Reviewers == 0)
+            {
+               Log.Info("No Reviewers to add");
+               return;
+            }
+
+            try
+            {
+               ProcessReviewers();
+            }
+            catch (Exception ex)
+            {
+               Log.Error("Unable to process reviewers", ex);
+            }
+         });
+      }
+
+      private List<string> ProcessAssignees(Issue issue)
+      {
          List<Task> assigneesTasks = new List<Task>();
          List<string> validAssignees = new List<string>();
 
-         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Assignee)}='{string.Join(", ", Config.OrgaInfo.Assignee)}'");
-         foreach (var assignee in Config.OrgaInfo.Assignee)
+         var alreadyExistingAssignees = issue.Assignees.Select(user => user.Login);
+
+         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Assignees)}='{string.Join(", ", Config.OrgaInfo.Assignees)}'");
+         foreach (var assignee in Config.OrgaInfo.Assignees)
          {
+            if (alreadyExistingAssignees.Contains(assignee))
+            {
+               Log.Info($"Assignee '{assignee}' is a already assigned");
+               continue;
+            }
+
             var checkIfIsAssigneeTask = RepoClient.Issue.Assignee.CheckAssignee(Repo.Id, assignee);
 
             assigneesTasks.Add(checkIfIsAssigneeTask.ContinueWith(isAssigneeTask =>
             {
-               if(isAssigneeTask.IsFaulted)
+               if (isAssigneeTask.IsFaulted)
                {
                   Log.Error($"{nameof(checkIfIsAssigneeTask)} failed", isAssigneeTask.Exception);
                   return;
@@ -278,16 +350,58 @@ namespace PullDetachedRemote.Workflow
 
                Log.Info($"Assignee '{assignee}' is a valid assigne");
                validAssignees.Add(assignee);
+
             }));
          }
 
          Log.Info("Waiting for Assignee-verification to end");
          TaskRunner.RunTasks(assigneesTasks.ToArray());
 
-         RepoClient.Issue.Update(Repo.Id, PullRequest.Id, new IssueUpdate()
+         return validAssignees;
+      }
+
+      private List<string> ProcessLabels(Issue issue)
+      {
+         var labelsToAdd = new List<string>();
+
+         var alreadyExistingLabels = issue.Labels.Select(lbl => lbl.Name);
+
+         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Labels)}='{string.Join(", ", Config.OrgaInfo.Labels)}'");
+
+         foreach (var label in Config.OrgaInfo.Labels)
          {
-            Assignees = validAssignees
-         });
+            if (alreadyExistingLabels.Contains(label))
+            {
+               Log.Info($"Label '{label}' is a already assigned");
+               continue;
+            }
+
+            labelsToAdd.Add(label);
+         }
+
+         return labelsToAdd;
+      }
+
+      private void ProcessReviewers()
+      {
+         var reviewersToAdd = new List<string>();
+
+         var requestedReviews = RepoClient.PullRequest.ReviewRequest.Get(Repo.Id, PullRequest.Number).Result;
+
+         var alreadyExistingReviewers = requestedReviews.Users.Select(user => user.Login);
+
+         foreach (var reviewer in Config.OrgaInfo.Reviewers)
+         {
+            if (alreadyExistingReviewers.Contains(reviewer))
+            {
+               Log.Info($"Reviewer '{reviewer}' is a already assigned");
+               continue;
+            }
+
+            reviewersToAdd.Add(reviewer);
+         }
+
+         RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(, null));
       }
 
       public void Dispose()
