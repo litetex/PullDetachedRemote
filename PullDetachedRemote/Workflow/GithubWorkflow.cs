@@ -315,6 +315,7 @@ namespace PullDetachedRemote.Workflow
                Log.Error("Unable to process reviewers", ex);
             }
          });
+
       }
 
       private List<string> ProcessAssignees(Issue issue)
@@ -401,7 +402,7 @@ namespace PullDetachedRemote.Workflow
             reviewersToAdd.Add(reviewer);
          }
 
-         RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(, null));
+         RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null));
       }
 
       public void Dispose()
