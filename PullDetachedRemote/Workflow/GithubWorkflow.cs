@@ -300,9 +300,9 @@ namespace PullDetachedRemote.Workflow
 
          var prTask = Task.Run(() =>
          {
-            if (Config.OrgaInfo.Reviewers == null || Config.OrgaInfo.Labels.Reviewers == 0)
+            if (Config.OrgaInfo.Reviewers == null || Config.OrgaInfo.Reviewers.Count == 0)
             {
-               Log.Info("No Reviewers to add");
+               Log.Info("No Labels to add");
                return;
             }
 
