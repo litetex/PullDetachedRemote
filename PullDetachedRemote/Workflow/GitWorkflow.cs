@@ -47,7 +47,7 @@ namespace PullDetachedRemote.Workflow
          UpstreamCredentialsHandler = upstreamCredentialsHandler;
 
          // Configure identity
-         Identity = new Identity(Config.IdentityUsername, Config.IdentityEmail);
+         Identity = new Identity(Config.OrgaInfo.IdentityUsername, Config.OrgaInfo.IdentityEmail);
          Log.Info($"Using Identity: Username='{Identity.Name}', Email='{Identity.Email}'");
 
          // Init Repo

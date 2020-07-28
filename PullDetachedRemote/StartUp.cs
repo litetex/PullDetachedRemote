@@ -96,8 +96,8 @@ namespace PullDetachedRemote
          cps.SetStringSecret(() => CmdOption.DETACHED_CREDS_PRINCIPAL, v => Config.DetachedCredsPrinicipal = v, nameof(Config.DetachedCredsPrinicipal));
          cps.SetStringSecret(() => CmdOption.DETACHED_CREDS_PW, v => Config.DetachedCredsPassword = v, nameof(Config.DetachedCredsPassword));
 
-         cps.SetString(() => CmdOption.IdentityEmail, v => Config.IdentityEmail = v, nameof(Config.IdentityEmail));
-         cps.SetString(() => CmdOption.IdentityUsername, v => Config.IdentityUsername = v, nameof(Config.IdentityUsername));
+         cps.SetString(() => CmdOption.IdentityEmail, v => Config.OrgaInfo.IdentityEmail = v, nameof(Config.OrgaInfo.IdentityEmail));
+         cps.SetString(() => CmdOption.IdentityUsername, v => Config.OrgaInfo.IdentityUsername = v, nameof(Config.OrgaInfo.IdentityUsername));
          cps.SetString(() => CmdOption.PathToWorkingRepo, v => Config.PathToWorkingRepo = v, nameof(Config.PathToWorkingRepo));
          cps.SetEnum<CloneMode>(() => CmdOption.CloneMode, v => Config.CloneMode = v, nameof(Config.CloneMode));
          cps.SetString(() => CmdOption.OriginRepo, v => Config.OriginRepo = v, nameof(Config.OriginRepo));

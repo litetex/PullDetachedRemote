@@ -38,11 +38,11 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.GitHubPAT))
             throw new ArgumentException($"{nameof(Config.GitHubPAT)}[='****'] is invalid");
 
-         if (string.IsNullOrWhiteSpace(Config.IdentityEmail))
-            throw new ArgumentException($"{nameof(Config.IdentityEmail)}[='{Config.IdentityEmail}'] is invalid");
+         if (string.IsNullOrWhiteSpace(Config.OrgaInfo.IdentityEmail))
+            throw new ArgumentException($"{nameof(Config.OrgaInfo.IdentityEmail)}[='{Config.OrgaInfo.IdentityEmail}'] is invalid");
 
-         if (string.IsNullOrWhiteSpace(Config.IdentityUsername))
-            Config.IdentityUsername = $"{Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version}";
+         if (string.IsNullOrWhiteSpace(Config.OrgaInfo.IdentityUsername))
+            Config.OrgaInfo.IdentityUsername = $"{Assembly.GetEntryAssembly().GetName().Name} {Assembly.GetEntryAssembly().GetName().Version}";
 
          if (string.IsNullOrWhiteSpace(Config.UpstreamRepo) && Uri.TryCreate(Config.UpstreamRepo, UriKind.Absolute, out _))
             throw new ArgumentException($"{nameof(Config.UpstreamRepo)}[='{Config.UpstreamRepo}'] is invalid");
@@ -183,6 +183,9 @@ namespace PullDetachedRemote
                try
                {
                   GitHubWorkflow.SetPRStatus(status);
+
+                  if (status.CreatedPR)
+                     GitHubWorkflow.SetOrgaInfo(status);
                }
                catch
                {

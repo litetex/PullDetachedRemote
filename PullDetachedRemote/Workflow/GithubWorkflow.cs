@@ -1,4 +1,5 @@
-﻿using Octokit;
+﻿using CoreFramework.Base.Tasks;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -206,7 +207,7 @@ namespace PullDetachedRemote.Workflow
 
          Log.Info($"Creating PullRequest '{sourceBranchName}'->'{TargetPRBranchName}'");
          var newPr = new NewPullRequest($"UpstreamUpdate from {upstreamRepoUrl}", sourceBranchName, TargetPRBranchName);
-
+         
          PullRequest = RepoClient.PullRequest.Create(Repo.Id, newPr).Result;
 
          Log.Info($"Created PullRequest '{sourceBranchName}'->'{TargetPRBranchName}' Title='{PullRequest.Title}',ID='{PullRequest.Id}'");
@@ -250,6 +251,43 @@ namespace PullDetachedRemote.Workflow
                $"{afterStatus}",
          }).Result;
          Log.Info($"Updated PR[ID='{PullRequest.Id}']");
+      }
+
+      public void SetOrgaInfoToNewPR(StatusReport status)
+      {
+         List<Task> assigneesTasks = new List<Task>();
+         List<string> validAssignees = new List<string>();
+
+         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Assignee)}='{string.Join(", ", Config.OrgaInfo.Assignee)}'");
+         foreach (var assignee in Config.OrgaInfo.Assignee)
+         {
+            var checkIfIsAssigneeTask = RepoClient.Issue.Assignee.CheckAssignee(Repo.Id, assignee);
+
+            assigneesTasks.Add(checkIfIsAssigneeTask.ContinueWith(isAssigneeTask =>
+            {
+               if(isAssigneeTask.IsFaulted)
+               {
+                  Log.Error($"{nameof(checkIfIsAssigneeTask)} failed", isAssigneeTask.Exception);
+                  return;
+               }
+               if (!isAssigneeTask.Result)
+               {
+                  Log.Warn($"Assignee '{assignee}' is not a assigne of the current repo[ID={Repo.Id}]");
+                  return;
+               }
+
+               Log.Info($"Assignee '{assignee}' is a valid assigne");
+               validAssignees.Add(assignee);
+            }));
+         }
+
+         Log.Info("Waiting for Assignee-verification to end");
+         TaskRunner.RunTasks(assigneesTasks.ToArray());
+
+         RepoClient.Issue.Update(Repo.Id, PullRequest.Id, new IssueUpdate()
+         {
+            Assignees = validAssignees
+         });
       }
 
       public void Dispose()

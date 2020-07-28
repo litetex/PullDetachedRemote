@@ -44,13 +44,13 @@ namespace PullDetachedRemote.CMD
       public string DETACHED_CREDS_PW { get; set; } = null;
 
       /// <summary>
-      /// <see cref="Config.Configuration.IdentityEmail"/>
+      /// <see cref="Config.OrganizationallyInformation.IdentityEmail"/>
       /// </summary>
       [Option("identitymail")]
       public string IdentityEmail { get; set; }
 
       /// <summary>
-      /// <see cref="Config.Configuration.IdentityUsername"/>
+      /// <see cref="Config.OrganizationallyInformation.IdentityUsername"/>
       /// </summary>
       [Option("identityuser")]
       public string IdentityUsername { get; set; } 

@@ -9,20 +9,27 @@ namespace PullDetachedRemote.Config
    public class Configuration : YamlConfig
    {
       /// <summary>
-      /// Email for commits
+      /// [DEPRECATED] Email for commits
       /// </summary>
       /// <remarks>
       /// Required
       /// </remarks>
-      public string IdentityEmail { get; set; } = null;
+      [Obsolete("Use OrganizationallyInformation")]
+      public string IdentityEmail { get => OrgaInfo.IdentityEmail; set => OrgaInfo.IdentityEmail = value; }
 
       /// <summary>
-      /// User for commits
+      /// [DEPRECATED] User for commits
       /// </summary>
       /// <remarks>
       /// Optional; default "nameofThisProject Version"
       /// </remarks>
-      public string IdentityUsername { get; set; } = null;
+      [Obsolete("Use OrganizationallyInformation")]
+      public string IdentityUsername { get => OrgaInfo.IdentityUsername; set => OrgaInfo.IdentityUsername = value; }
+
+      /// <summary>
+      /// organizationally information
+      /// </summary>
+      public OrganizationallyInformation OrgaInfo { get; set; } = new OrganizationallyInformation();
 
       /// <summary>
       /// Path to working repo
