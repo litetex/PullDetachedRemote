@@ -256,21 +256,25 @@ namespace PullDetachedRemote.Workflow
       public void SetOrgaInfoToNewPR(StatusReport status)
       {
          Issue issue = null;
-         if (Config.OrgaInfo.Assignees != null && Config.OrgaInfo.Assignees.Count > 0 &&
-            Config.OrgaInfo.Labels != null && Config.OrgaInfo.Labels.Count > 0)
+         if (Config.PRMetaInfo.Assignees != null && Config.PRMetaInfo.Assignees.Count > 0 &&
+            Config.PRMetaInfo.Labels != null && Config.PRMetaInfo.Labels.Count > 0)
             issue = RepoClient.Issue.Get(Repo.Id, PullRequest.Number).Result;
 
          var assigneeTask = Task.Run(() =>
          {
-            if(Config.OrgaInfo.Assignees == null || Config.OrgaInfo.Assignees.Count == 0)
+            if(Config.PRMetaInfo.Assignees == null || Config.PRMetaInfo.Assignees.Count == 0)
             {
-               Log.Info("No Assignees to add");
+               Log.Info("No assignees to add");
                return;
             }
 
             try
             {
-               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Name, Repo.Name, PullRequest.Number, new AssigneesUpdate(ProcessAssignees(issue)));
+               Log.Info("Start processing assignees");
+               var assignees = ProcessAssignees(issue);
+               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Name, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees));
+
+               status.Messages.Add($"Added assignees: '{string.Join(", ", assignees)}'");
             }
             catch (Exception ex)
             {
@@ -278,17 +282,21 @@ namespace PullDetachedRemote.Workflow
             }
          });
 
-         var labelsTask = Task.Run(() =>
+         var labelTask = Task.Run(() =>
          {
-            if (Config.OrgaInfo.Labels == null || Config.OrgaInfo.Labels.Count == 0)
+            if (Config.PRMetaInfo.Labels == null || Config.PRMetaInfo.Labels.Count == 0)
             {
-               Log.Info("No Labels to add");
+               Log.Info("No labels to add");
                return;
             }
 
             try
             {
-               RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, ProcessLabels(issue).ToArray());
+               Log.Info("Start processing labels");
+               var labels = ProcessLabels(issue);
+               RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, labels.ToArray());
+
+               status.Messages.Add($"Added labels: '{string.Join(", ", labels)}'");
             }
             catch (Exception ex)
             {
@@ -296,19 +304,18 @@ namespace PullDetachedRemote.Workflow
             }
          });
 
-
-
-         var prTask = Task.Run(() =>
+         var reviwerTask = Task.Run(() =>
          {
-            if (Config.OrgaInfo.Reviewers == null || Config.OrgaInfo.Reviewers.Count == 0)
+            if (Config.PRMetaInfo.Reviewers == null || Config.PRMetaInfo.Reviewers.Count == 0)
             {
-               Log.Info("No Labels to add");
+               Log.Info("No reviewers to add");
                return;
             }
 
             try
             {
-               ProcessReviewers();
+               Log.Info("Start processing reviewers");
+               ProcessReviewers(status);
             }
             catch (Exception ex)
             {
@@ -316,6 +323,9 @@ namespace PullDetachedRemote.Workflow
             }
          });
 
+         Log.Info("Waiting for post processing tasks of PR to end");
+         TaskRunner.RunTasks(assigneeTask, labelTask, reviwerTask);
+         Log.Info("All tasks are done");
       }
 
       private List<string> ProcessAssignees(Issue issue)
@@ -325,8 +335,8 @@ namespace PullDetachedRemote.Workflow
 
          var alreadyExistingAssignees = issue.Assignees.Select(user => user.Login);
 
-         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Assignees)}='{string.Join(", ", Config.OrgaInfo.Assignees)}'");
-         foreach (var assignee in Config.OrgaInfo.Assignees)
+         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Assignees)}='{string.Join(", ", Config.PRMetaInfo.Assignees)}'");
+         foreach (var assignee in Config.PRMetaInfo.Assignees)
          {
             if (alreadyExistingAssignees.Contains(assignee))
             {
@@ -367,9 +377,9 @@ namespace PullDetachedRemote.Workflow
 
          var alreadyExistingLabels = issue.Labels.Select(lbl => lbl.Name);
 
-         Log.Info($"Trying to add {nameof(Config.OrgaInfo.Labels)}='{string.Join(", ", Config.OrgaInfo.Labels)}'");
+         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Labels)}='{string.Join(", ", Config.PRMetaInfo.Labels)}'");
 
-         foreach (var label in Config.OrgaInfo.Labels)
+         foreach (var label in Config.PRMetaInfo.Labels)
          {
             if (alreadyExistingLabels.Contains(label))
             {
@@ -383,7 +393,7 @@ namespace PullDetachedRemote.Workflow
          return labelsToAdd;
       }
 
-      private void ProcessReviewers()
+      private void ProcessReviewers(StatusReport status)
       {
          var reviewersToAdd = new List<string>();
 
@@ -391,7 +401,8 @@ namespace PullDetachedRemote.Workflow
 
          var alreadyExistingReviewers = requestedReviews.Users.Select(user => user.Login);
 
-         foreach (var reviewer in Config.OrgaInfo.Reviewers)
+         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Reviewers)}='{string.Join(", ", Config.PRMetaInfo.Reviewers)}'");
+         foreach (var reviewer in Config.PRMetaInfo.Reviewers)
          {
             if (alreadyExistingReviewers.Contains(reviewer))
             {
@@ -403,6 +414,8 @@ namespace PullDetachedRemote.Workflow
          }
 
          RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null));
+
+         status.Messages.Add($"Added reviewers: '{string.Join(", ", reviewersToAdd)}'");
       }
 
       public void Dispose()

@@ -44,16 +44,34 @@ namespace PullDetachedRemote.CMD
       public string DETACHED_CREDS_PW { get; set; } = null;
 
       /// <summary>
-      /// <see cref="Config.OrganizationallyInformation.IdentityEmail"/>
+      /// <see cref="Config.IdentityEmail"/>
       /// </summary>
       [Option("identitymail")]
       public string IdentityEmail { get; set; }
 
       /// <summary>
-      /// <see cref="Config.OrganizationallyInformation.IdentityUsername"/>
+      /// <see cref="Config.IdentityUsername"/>
       /// </summary>
       [Option("identityuser")]
-      public string IdentityUsername { get; set; } 
+      public string IdentityUsername { get; set; }
+
+      /// <summary>
+      /// <see cref="Config.PullRequestMetaInfoConfig.Assignees"/>
+      /// </summary>
+      [Option("prassginees")]
+      public string[] PRAssignees { get; set; }
+
+      /// <summary>
+      /// <see cref="Config.PullRequestMetaInfoConfig.Reviewers"/>
+      /// </summary>
+      [Option("prreviwers")]
+      public string[] PRReviewers { get; set; }
+
+      /// <summary>
+      /// <see cref="Config.PullRequestMetaInfoConfig.Labels"/>
+      /// </summary>
+      [Option("prlabels")]
+      public string[] PRLabels { get; set; }
 
       /// <summary>
       /// <see cref="Config.Configuration.PathToWorkingRepo"/>
