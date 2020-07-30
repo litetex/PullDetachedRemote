@@ -274,6 +274,7 @@ namespace PullDetachedRemote.Workflow
                var assignees = ProcessAssignees(issue);
                RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees));
 
+               Log.Info($"Added assignees: '{string.Join(", ", assignees)}'");
                status.Messages.Add($"Added assignees: '{string.Join(", ", assignees)}'");
             }
             catch (Exception ex)
@@ -296,6 +297,7 @@ namespace PullDetachedRemote.Workflow
                var labels = ProcessLabels(issue);
                RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, labels.ToArray());
 
+               Log.Info($"Added labels: '{string.Join(", ", labels)}'");
                status.Messages.Add($"Added labels: '{string.Join(", ", labels)}'");
             }
             catch (Exception ex)
@@ -359,7 +361,7 @@ namespace PullDetachedRemote.Workflow
                   return;
                }
 
-               Log.Info($"Assignee '{assignee}' is a valid assigne");
+               Log.Info($"Assignee '{assignee}' is a valid assignee");
                validAssignees.Add(assignee);
 
             }));
@@ -415,6 +417,7 @@ namespace PullDetachedRemote.Workflow
 
          RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null));
 
+         Log.Info($"Added reviewers: '{string.Join(", ", reviewersToAdd)}'");
          status.Messages.Add($"Added reviewers: '{string.Join(", ", reviewersToAdd)}'");
       }
 
