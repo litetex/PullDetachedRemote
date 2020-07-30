@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PullDetachedRemote.Util
 {
    public class PropertySetter
    {
+      public string SecretPlaceHolder { get; set; } = "****";
+
       public string SetLog { get; set; } = "Set";
       public string SetFaultyLog { get; set; } = "SetFaulty";
 
@@ -20,7 +23,7 @@ namespace PullDetachedRemote.Util
          if (string.IsNullOrWhiteSpace(input))
             return;
 
-         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? input : "****")}'");
+         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? input : SecretPlaceHolder)}'");
          setInto(input);
       }
 
@@ -77,7 +80,7 @@ namespace PullDetachedRemote.Util
          if (input == null)
             return;
 
-         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? input.ToString() : "****")}'");
+         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? input.ToString() : SecretPlaceHolder)}'");
          setInto(input);
       }
 
@@ -88,18 +91,29 @@ namespace PullDetachedRemote.Util
          if (input == null || input.Length == 0)
             return;
 
-         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? string.Join(", ", input) : "****")}'");
+         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? string.Join("', '", input) : SecretPlaceHolder)}'");
          setInto(input);
       }
 
       public void SetCollection<T>(Func<ICollection<T>> getFrom, Action<ICollection<T>> setInto, string nameofSetPar, bool logInput = true)
       {
-         ICollection<T> input = getFrom();
+         var input = getFrom();
 
          if (input == null || input.Count == 0)
             return;
 
-         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? string.Join(", ", input) : "****")}'");
+         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? string.Join("', '", input) : SecretPlaceHolder)}'");
+         setInto(input);
+      }
+
+      public void SetEnumerable<T>(Func<IEnumerable<T>> getFrom, Action<IEnumerable<T>> setInto, string nameofSetPar, bool logInput = true)
+      {
+         var input = getFrom();
+
+         if (input == null || input.Any())
+            return;
+
+         Log?.Invoke($"{SetLog}: {nameofSetPar}='{(logInput ? string.Join("', '", input) : SecretPlaceHolder)}'");
          setInto(input);
       }
 

@@ -88,7 +88,9 @@ namespace PullDetachedRemote
          var cps = new PropertySetter()
          {
             SetLog = "SetInp",
-            SetFaultyLog = "SetInpFaulty"
+            SetFaultyLog = "SetInpFaulty",
+            Log = text => Log.Info(text),
+            FaultyLog = text => Log.Warn(text)
          };
 
          cps.SetStringSecret(() => CmdOption.GITHUB_TOKEN, v => Config.GitHubToken = v, nameof(Config.GitHubToken));
@@ -121,7 +123,9 @@ namespace PullDetachedRemote
          var cps = new PropertySetter()
          {
             SetLog = "SetEnv",
-            SetFaultyLog = "SetEnvFaulty"
+            SetFaultyLog = "SetEnvFaulty",
+            Log = text => Log.Info(text),
+            FaultyLog = text => Log.Warn(text)
          };
 
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("GITHUB_TOKEN"), v => Config.GitHubToken = v, nameof(Config.GitHubToken));
