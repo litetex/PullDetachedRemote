@@ -10,7 +10,7 @@ namespace PullDetachedRemote.Config
    public class PullRequestMetaInfoConfig
    {
       /// <summary>
-      /// Assignees for the Pull Request on GitHub
+      /// Assignees for the Pull Request on GitHub (mutally exclusive with Reviewers)
       /// </summary>
       /// <remarks>
       /// Optional;
@@ -19,13 +19,10 @@ namespace PullDetachedRemote.Config
       public ICollection<string> Assignees { get; set; } = new List<string>();
 
       /// <summary>
-      /// Reviewers for the Pull Request on GitHub
+      /// Reviewers for the Pull Request on GitHub (mutally exclusive with Assignees)
       /// </summary>
       /// <remarks>
       /// Optional
-      /// <list type="bullet">
-      ///   <item>The user must be a </item>
-      /// </list>
       /// </remarks>
       public ICollection<string> Reviewers { get; set; } = new List<string>();
 
@@ -33,7 +30,8 @@ namespace PullDetachedRemote.Config
       /// Labels for the Pull Request on GitHub
       /// </summary>
       /// <remarks>
-      /// Optional
+      /// Optional;
+      /// if don't exists will create a label
       /// </remarks>
       public ICollection<string> Labels { get; set; } = new List<string>();
    }
