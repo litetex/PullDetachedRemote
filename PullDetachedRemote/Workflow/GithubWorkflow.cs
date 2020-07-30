@@ -285,6 +285,7 @@ namespace PullDetachedRemote.Workflow
             }
             catch (Exception ex)
             {
+               status.UncriticalErrors = true;
                Log.Error("Unable to add assignees", ex);
             }
          });
@@ -314,6 +315,7 @@ namespace PullDetachedRemote.Workflow
             }
             catch (Exception ex)
             {
+               status.UncriticalErrors = true;
                Log.Error("Unable to add labels", ex);
             }
          });
@@ -333,6 +335,7 @@ namespace PullDetachedRemote.Workflow
             }
             catch (Exception ex)
             {
+               status.UncriticalErrors = true;
                Log.Error("Unable to process reviewers", ex);
             }
          });

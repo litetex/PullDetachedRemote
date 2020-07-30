@@ -52,6 +52,12 @@ namespace PullDetachedRemote
 
          if (string.IsNullOrWhiteSpace(Config.UpstreamBranch))
             Config.UpstreamBranch = null; // Process it later!
+
+         if (Config.PRMetaInfo == null)
+         {
+            Log.Warn($"{nameof(Config.PRMetaInfo)} was not set! Setting it to default value. PLEASE FIX the config");
+            Config.PRMetaInfo = new PullRequestMetaInfoConfig();
+         }
       }
 
       #endregion Init
