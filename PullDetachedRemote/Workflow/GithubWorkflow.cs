@@ -272,10 +272,16 @@ namespace PullDetachedRemote.Workflow
             {
                Log.Info("Start processing assignees");
                var assignees = ProcessAssignees(issue);
-               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees));
+               var resultIssue = RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees)).Result;
 
-               Log.Info($"Added assignees: '{string.Join(", ", assignees)}'");
-               status.Messages.Add($"Added assignees: '{string.Join(", ", assignees)}'");
+               IEnumerable<string> assigneesOfPR = resultIssue.Assignees.Select(user => user.Login);
+
+               foreach (var assignee in assignees.Where(r => !assigneesOfPR.Contains(r)))
+                  Log.Warn($"Assignee '{assignee}' was not added to PR");
+
+               var resultAssigneesStr = resultIssue.Assignees.Count > 0 ? $"'{string.Join("', '", assigneesOfPR)}'" : "<none>";
+               Log.Info($"Assignees of PR: {resultAssigneesStr}");
+               status.Messages.Add($"Assignees of PR: {resultAssigneesStr}");
             }
             catch (Exception ex)
             {
@@ -295,10 +301,16 @@ namespace PullDetachedRemote.Workflow
             {
                Log.Info("Start processing labels");
                var labels = ProcessLabels(issue);
-               RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, labels.ToArray());
+               var resultLabels = RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, labels.ToArray()).Result;
 
-               Log.Info($"Added labels: '{string.Join(", ", labels)}'");
-               status.Messages.Add($"Added labels: '{string.Join(", ", labels)}'");
+               IEnumerable<string> labelsOfPR = resultLabels.Select(lbl => lbl.Name);
+
+               foreach (var label in labels.Where(r => !labelsOfPR.Contains(r)))
+                  Log.Warn($"Label '{label}' was not added to PR");
+
+               var resultLabelsStr = resultLabels.Count > 0 ? $"'{string.Join("', '", labelsOfPR)}'" : "<none>";
+               Log.Info($"Labels of PR: {resultLabelsStr}");
+               status.Messages.Add($"Labels of PR: {resultLabelsStr}");
             }
             catch (Exception ex)
             {
@@ -415,10 +427,17 @@ namespace PullDetachedRemote.Workflow
             reviewersToAdd.Add(reviewer);
          }
 
-         RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null));
+         var pr = RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null)).Result;
 
-         Log.Info($"Added reviewers: '{string.Join(", ", reviewersToAdd)}'");
-         status.Messages.Add($"Added reviewers: '{string.Join(", ", reviewersToAdd)}'");
+         IEnumerable<string> reviewersOfPR = pr.RequestedReviewers.Select(user => user.Login);
+
+         foreach (var reviewer in reviewersToAdd.Where(r => !reviewersOfPR.Contains(r)))
+            Log.Warn($"Reviewer '{reviewer}' was not added to PR");
+
+         var resultReviewersStr = pr.RequestedReviewers.Count > 0 ? $"'{string.Join("', '", reviewersOfPR)}'" : "<none>";
+
+         Log.Info($"Reviewers of PR: {resultReviewersStr}");
+         status.Messages.Add($"Reviewers of PR: {resultReviewersStr}");
       }
 
       public void Dispose()
