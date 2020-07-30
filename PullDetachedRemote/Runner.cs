@@ -182,10 +182,10 @@ namespace PullDetachedRemote
                status.UpdatedPRSuccessfully = true;
                try
                {
-                  GitHubWorkflow.SetPRStatus(status);
-
                   if (status.CreatedPR)
                      GitHubWorkflow.SetOrgaInfoToNewPR(status);
+
+                  GitHubWorkflow.SetPRStatus(status);
                }
                catch
                {
