@@ -277,11 +277,13 @@ namespace PullDetachedRemote.Workflow
                IEnumerable<string> assigneesOfPR = resultIssue.Assignees.Select(user => user.Login);
 
                foreach (var assignee in assignees.Where(r => !assigneesOfPR.Contains(r)))
-                  Log.Warn($"Assignee '{assignee}' was not added to PR");
+               {
+                  var warnMsg = $"Assignee '{assignee}' was not added to PR";
+                  Log.Warn(warnMsg);
+                  status.Messages.Add(warnMsg);
+               }
 
-               var resultAssigneesStr = resultIssue.Assignees.Count > 0 ? $"'{string.Join("', '", assigneesOfPR)}'" : "<none>";
-               Log.Info($"Assignees of PR: {resultAssigneesStr}");
-               status.Messages.Add($"Assignees of PR: {resultAssigneesStr}");
+               Log.Info($"Assignees of PR: [{(resultIssue.Assignees.Count > 0 ? $"'{string.Join("', '", assigneesOfPR)}'" : "")}]");
             }
             catch (Exception ex)
             {
@@ -307,11 +309,13 @@ namespace PullDetachedRemote.Workflow
                IEnumerable<string> labelsOfPR = resultLabels.Select(lbl => lbl.Name);
 
                foreach (var label in labels.Where(r => !labelsOfPR.Contains(r)))
-                  Log.Warn($"Label '{label}' was not added to PR");
+               { 
+                  var warnMsg = $"Label '{label}' was not added to PR";
+                  Log.Warn(warnMsg);
+                  status.Messages.Add(warnMsg);
+               }
 
-               var resultLabelsStr = resultLabels.Count > 0 ? $"'{string.Join("', '", labelsOfPR)}'" : "<none>";
-               Log.Info($"Labels of PR: {resultLabelsStr}");
-               status.Messages.Add($"Labels of PR: {resultLabelsStr}");
+               Log.Info($"Labels of PR: [{(resultLabels.Count > 0 ? $"'{string.Join("', '", labelsOfPR)}'" : "")}]");
             }
             catch (Exception ex)
             {
@@ -435,12 +439,13 @@ namespace PullDetachedRemote.Workflow
          IEnumerable<string> reviewersOfPR = pr.RequestedReviewers.Select(user => user.Login);
 
          foreach (var reviewer in reviewersToAdd.Where(r => !reviewersOfPR.Contains(r)))
-            Log.Warn($"Reviewer '{reviewer}' was not added to PR");
+         {
+            var warnMsg = $"Reviewer '{reviewer}' was not added to PR";
+            Log.Warn(warnMsg);
+            status.Messages.Add(warnMsg);
+         }
 
-         var resultReviewersStr = pr.RequestedReviewers.Count > 0 ? $"'{string.Join("', '", reviewersOfPR)}'" : "<none>";
-
-         Log.Info($"Reviewers of PR: {resultReviewersStr}");
-         status.Messages.Add($"Reviewers of PR: {resultReviewersStr}");
+         Log.Info($"Reviewers of PR: [{(pr.RequestedReviewers.Count > 0 ? $"'{string.Join("', '", reviewersOfPR)}'" : "")}]");
       }
 
       public void Dispose()
