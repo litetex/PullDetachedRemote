@@ -272,7 +272,7 @@ namespace PullDetachedRemote.Workflow
             {
                Log.Info("Start processing assignees");
                var assignees = ProcessAssignees(issue);
-               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Name, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees));
+               RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees));
 
                status.Messages.Add($"Added assignees: '{string.Join(", ", assignees)}'");
             }
