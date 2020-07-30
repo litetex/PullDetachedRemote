@@ -58,7 +58,7 @@ namespace PullDetachedRemote.CMD
       /// <summary>
       /// <see cref="Config.PullRequestMetaInfoConfig.Assignees"/>
       /// </summary>
-      [Option("prassginees")]
+      [Option("prassignees")]
       public ICollection<string> PRAssignees { get; set; }
 
       /// <summary>
