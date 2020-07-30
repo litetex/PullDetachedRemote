@@ -271,7 +271,7 @@ namespace PullDetachedRemote.Workflow
             try
             {
                Log.Info("Start processing assignees");
-               var assignees = ProcessAssignees(issue);
+               var assignees = ProcessAssignees(issue, status);
                var resultIssue = RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees)).Result;
 
                IEnumerable<string> assigneesOfPR = resultIssue.Assignees.Select(user => user.Login);
@@ -349,7 +349,7 @@ namespace PullDetachedRemote.Workflow
          Log.Info("All tasks are done");
       }
 
-      private List<string> ProcessAssignees(Issue issue)
+      private List<string> ProcessAssignees(Issue issue, StatusReport status)
       {
          List<Task> assigneesTasks = new List<Task>();
          List<string> validAssignees = new List<string>();
@@ -372,11 +372,18 @@ namespace PullDetachedRemote.Workflow
                if (isAssigneeTask.IsFaulted)
                {
                   Log.Error($"{nameof(checkIfIsAssigneeTask)} failed", isAssigneeTask.Exception);
+                  status.UncriticalErrors = true;
+
                   return;
                }
+
                if (!isAssigneeTask.Result)
                {
-                  Log.Warn($"Assignee '{assignee}' is not a assigne of the current repo[ID={Repo.Id}]");
+                  var warnMsg = $"Can not assign assignee '{assignee}': does not belong to current repo[ID={Repo.Id}]";
+                  
+                  Log.Warn(warnMsg);
+                  status.Messages.Add(warnMsg);
+
                   return;
                }
 
