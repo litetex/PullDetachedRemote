@@ -189,7 +189,7 @@ namespace PullDetachedRemote
                try
                {
                   if (status.CreatedPR)
-                     GitHubWorkflow.SetOrgaInfoToNewPR(status);
+                     GitHubWorkflow.SetMetaToNewPR(status);
 
                   GitHubWorkflow.SetPRStatus(status);
                }

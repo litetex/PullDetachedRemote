@@ -1,5 +1,6 @@
 ﻿using CoreFramework.Base.Tasks;
 using Octokit;
+using PullDetachedRemote.Workflow.PullRequestProcessor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -215,6 +216,23 @@ namespace PullDetachedRemote.Workflow
          return true;
       }
 
+      public void SetMetaToNewPR(StatusReport status)
+      {
+         Issue issue = null;
+
+         if (Config.PRMetaInfo.Assignees != null && Config.PRMetaInfo.Assignees.Count > 0 ||
+            Config.PRMetaInfo.Labels != null && Config.PRMetaInfo.Labels.Count > 0)
+            issue = RepoClient.Issue.Get(Repo.Id, PullRequest.Number).Result;
+
+         Log.Info("Waiting for post processing tasks of PR to end");
+         TaskRunner.RunTasks(
+            Task.Run(() => new PullRequestAssigneeProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run(issue)),
+            Task.Run(() => new PullRequestLabelProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run(issue)),
+            Task.Run(() => new PullRequestReviewerProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run())
+         );
+         Log.Info("All tasks are done");
+      }
+
       const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
       const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
 
@@ -251,208 +269,6 @@ namespace PullDetachedRemote.Workflow
                $"{afterStatus}",
          }).Result;
          Log.Info($"Updated PR[ID='{PullRequest.Id}']");
-      }
-
-      public void SetOrgaInfoToNewPR(StatusReport status)
-      {
-         Issue issue = null;
-         if (Config.PRMetaInfo.Assignees != null && Config.PRMetaInfo.Assignees.Count > 0 &&
-            Config.PRMetaInfo.Labels != null && Config.PRMetaInfo.Labels.Count > 0)
-            issue = RepoClient.Issue.Get(Repo.Id, PullRequest.Number).Result;
-
-         var assigneeTask = Task.Run(() =>
-         {
-            if(Config.PRMetaInfo.Assignees == null || Config.PRMetaInfo.Assignees.Count == 0)
-            {
-               Log.Info("No assignees to add");
-               return;
-            }
-
-            try
-            {
-               Log.Info("Start processing assignees");
-               var assignees = ProcessAssignees(issue, status);
-               var resultIssue = RepoClient.Issue.Assignee.AddAssignees(Repo.Owner.Login, Repo.Name, PullRequest.Number, new AssigneesUpdate(assignees)).Result;
-
-               IEnumerable<string> assigneesOfPR = resultIssue.Assignees.Select(user => user.Login);
-
-               foreach (var assignee in assignees.Where(r => !assigneesOfPR.Contains(r)))
-               {
-                  var warnMsg = $"Assignee '{assignee}' was not added to PR";
-                  Log.Warn(warnMsg);
-                  status.Messages.Add(warnMsg);
-               }
-
-               Log.Info($"Assignees of PR: [{(resultIssue.Assignees.Count > 0 ? $"'{string.Join("', '", assigneesOfPR)}'" : "")}]");
-            }
-            catch (Exception ex)
-            {
-               status.UncriticalErrors = true;
-               Log.Error("Unable to add assignees", ex);
-            }
-         });
-
-         var labelTask = Task.Run(() =>
-         {
-            if (Config.PRMetaInfo.Labels == null || Config.PRMetaInfo.Labels.Count == 0)
-            {
-               Log.Info("No labels to add");
-               return;
-            }
-
-            try
-            {
-               Log.Info("Start processing labels");
-               var labels = ProcessLabels(issue);
-               var resultLabels = RepoClient.Issue.Labels.AddToIssue(Repo.Id, PullRequest.Number, labels.ToArray()).Result;
-
-               IEnumerable<string> labelsOfPR = resultLabels.Select(lbl => lbl.Name);
-
-               foreach (var label in labels.Where(r => !labelsOfPR.Contains(r)))
-               { 
-                  var warnMsg = $"Label '{label}' was not added to PR";
-                  Log.Warn(warnMsg);
-                  status.Messages.Add(warnMsg);
-               }
-
-               Log.Info($"Labels of PR: [{(resultLabels.Count > 0 ? $"'{string.Join("', '", labelsOfPR)}'" : "")}]");
-            }
-            catch (Exception ex)
-            {
-               status.UncriticalErrors = true;
-               Log.Error("Unable to add labels", ex);
-            }
-         });
-
-         var reviwerTask = Task.Run(() =>
-         {
-            if (Config.PRMetaInfo.Reviewers == null || Config.PRMetaInfo.Reviewers.Count == 0)
-            {
-               Log.Info("No reviewers to add");
-               return;
-            }
-
-            try
-            {
-               Log.Info("Start processing reviewers");
-               ProcessReviewers(status);
-            }
-            catch (Exception ex)
-            {
-               status.UncriticalErrors = true;
-               Log.Error("Unable to process reviewers", ex);
-            }
-         });
-
-         Log.Info("Waiting for post processing tasks of PR to end");
-         TaskRunner.RunTasks(assigneeTask, labelTask, reviwerTask);
-         Log.Info("All tasks are done");
-      }
-
-      private List<string> ProcessAssignees(Issue issue, StatusReport status)
-      {
-         List<Task> assigneesTasks = new List<Task>();
-         List<string> validAssignees = new List<string>();
-
-         var alreadyExistingAssignees = issue.Assignees.Select(user => user.Login);
-
-         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Assignees)}='{string.Join(", ", Config.PRMetaInfo.Assignees)}'");
-         foreach (var assignee in Config.PRMetaInfo.Assignees)
-         {
-            if (alreadyExistingAssignees.Contains(assignee))
-            {
-               Log.Info($"Assignee '{assignee}' is a already assigned");
-               continue;
-            }
-
-            var checkIfIsAssigneeTask = RepoClient.Issue.Assignee.CheckAssignee(Repo.Id, assignee);
-
-            assigneesTasks.Add(checkIfIsAssigneeTask.ContinueWith(isAssigneeTask =>
-            {
-               if (isAssigneeTask.IsFaulted)
-               {
-                  Log.Error($"{nameof(checkIfIsAssigneeTask)} failed", isAssigneeTask.Exception);
-                  status.UncriticalErrors = true;
-
-                  return;
-               }
-
-               if (!isAssigneeTask.Result)
-               {
-                  var warnMsg = $"Can not assign assignee '{assignee}': does not belong to current repo[ID={Repo.Id}]";
-                  
-                  Log.Warn(warnMsg);
-                  status.Messages.Add(warnMsg);
-
-                  return;
-               }
-
-               Log.Info($"Assignee '{assignee}' is a valid assignee");
-               validAssignees.Add(assignee);
-
-            }));
-         }
-
-         Log.Info("Waiting for Assignee-verification to end");
-         TaskRunner.RunTasks(assigneesTasks.ToArray());
-
-         return validAssignees;
-      }
-
-      private List<string> ProcessLabels(Issue issue)
-      {
-         var labelsToAdd = new List<string>();
-
-         var alreadyExistingLabels = issue.Labels.Select(lbl => lbl.Name);
-
-         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Labels)}='{string.Join(", ", Config.PRMetaInfo.Labels)}'");
-
-         foreach (var label in Config.PRMetaInfo.Labels)
-         {
-            if (alreadyExistingLabels.Contains(label))
-            {
-               Log.Info($"Label '{label}' is a already assigned");
-               continue;
-            }
-
-            labelsToAdd.Add(label);
-         }
-
-         return labelsToAdd;
-      }
-
-      private void ProcessReviewers(StatusReport status)
-      {
-         var reviewersToAdd = new List<string>();
-
-         var requestedReviews = RepoClient.PullRequest.ReviewRequest.Get(Repo.Id, PullRequest.Number).Result;
-
-         var alreadyExistingReviewers = requestedReviews.Users.Select(user => user.Login);
-
-         Log.Info($"Trying to add {nameof(Config.PRMetaInfo.Reviewers)}='{string.Join(", ", Config.PRMetaInfo.Reviewers)}'");
-         foreach (var reviewer in Config.PRMetaInfo.Reviewers)
-         {
-            if (alreadyExistingReviewers.Contains(reviewer))
-            {
-               Log.Info($"Reviewer '{reviewer}' is a already assigned");
-               continue;
-            }
-
-            reviewersToAdd.Add(reviewer);
-         }
-
-         var pr = RepoClient.PullRequest.ReviewRequest.Create(Repo.Id, PullRequest.Number, new PullRequestReviewRequest(reviewersToAdd, null)).Result;
-
-         IEnumerable<string> reviewersOfPR = pr.RequestedReviewers.Select(user => user.Login);
-
-         foreach (var reviewer in reviewersToAdd.Where(r => !reviewersOfPR.Contains(r)))
-         {
-            var warnMsg = $"Reviewer '{reviewer}' was not added to PR";
-            Log.Warn(warnMsg);
-            status.Messages.Add(warnMsg);
-         }
-
-         Log.Info($"Reviewers of PR: [{(pr.RequestedReviewers.Count > 0 ? $"'{string.Join("', '", reviewersOfPR)}'" : "")}]");
       }
 
       public void Dispose()
