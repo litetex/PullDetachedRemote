@@ -59,19 +59,19 @@ namespace PullDetachedRemote.CMD
       /// <see cref="Config.PullRequestMetaInfoConfig.Assignees"/>
       /// </summary>
       [Option("prassignees")]
-      public ICollection<string> PRAssignees { get; set; }
+      public string PRAssignees { get; set; }
 
       /// <summary>
       /// <see cref="Config.PullRequestMetaInfoConfig.Reviewers"/>
       /// </summary>
       [Option("prreviewers")]
-      public ICollection<string> PRReviewers { get; set; }
+      public string PRReviewers { get; set; }
 
       /// <summary>
       /// <see cref="Config.PullRequestMetaInfoConfig.Labels"/>
       /// </summary>
       [Option("prlabels")]
-      public ICollection<string> PRLabels { get; set; }
+      public string PRLabels { get; set; }
 
       /// <summary>
       /// <see cref="Config.Configuration.PathToWorkingRepo"/>

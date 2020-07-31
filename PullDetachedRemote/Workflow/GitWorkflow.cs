@@ -337,9 +337,13 @@ namespace PullDetachedRemote.Workflow
          GC.SuppressFinalize(this);
       }
 
-      protected void Dispose(bool disposing)
+      protected virtual void Dispose(bool disposing)
       {
-         Log.Info("Disposing");
+         if (disposing)
+            Log.Info("Disposing");
+         else
+            Log.Info("Disposing via deconstructor");
+
          if (Repo != null)
          {
             if (UpstreamRemote != null)
