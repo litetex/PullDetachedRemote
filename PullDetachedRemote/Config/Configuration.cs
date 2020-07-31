@@ -25,6 +25,14 @@ namespace PullDetachedRemote.Config
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
+      /// PullRequest Meta Info
+      /// </summary>
+      /// <remarks>
+      /// Required
+      /// </remarks>
+      public PullRequestMetaInfoConfig PRMetaInfo { get; set; } = new PullRequestMetaInfoConfig();
+
+      /// <summary>
       /// Path to working repo
       /// </summary>
       /// <remarks>
