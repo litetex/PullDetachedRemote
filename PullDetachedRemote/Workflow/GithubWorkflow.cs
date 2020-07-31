@@ -273,6 +273,12 @@ namespace PullDetachedRemote.Workflow
 
       public void Dispose()
       {
+         Dispose(true);
+         GC.SuppressFinalize(this);
+      }
+
+      protected void Dispose(bool disposing)
+      {
          Log.Info("Disposing");
 
          if (AsyncConstructTask != null)
@@ -288,6 +294,11 @@ namespace PullDetachedRemote.Workflow
 
          RepoClient = null;
          GeneralClient = null;
+      }
+
+      ~GithubWorkflow()
+      {
+         Dispose(false);
       }
    }
 }
