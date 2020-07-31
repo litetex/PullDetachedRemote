@@ -256,11 +256,15 @@ namespace PullDetachedRemote.Workflow
             }
          }
 
+         string createdPRMessage = "";
+         if (status.CreatedPR)
+            createdPRMessage = $"\r\nIncoming upstream update from [{Config.UpstreamRepo}]({Config.UpstreamRepo}) {(!string.IsNullOrWhiteSpace(Config.UpstreamBranch) ? $" *branch=``{Config.UpstreamBranch}``*" :"")}";
+
          Log.Info($"Updating PR[ID='{PullRequest.Id}']");
 
          PullRequest = RepoClient.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
-            Body = $"{beforeStatus}" +
+            Body = $"{createdPRMessage}{beforeStatus}" +
                $"\r\n" +
                $"<details>" +
                $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
@@ -290,6 +294,7 @@ namespace PullDetachedRemote.Workflow
 
             if (AsyncConstructTask.IsCompleted)
                AsyncConstructTask.Dispose();
+
             AsyncConstructTask = null;
             Log.Info($"Disposed {nameof(AsyncConstructTask)}");
          }
