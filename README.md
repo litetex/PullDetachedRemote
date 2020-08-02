@@ -4,13 +4,29 @@
 
 [![Build develop](https://img.shields.io/github/workflow/status/litetex/PullDetachedRemote/Develop%20CI?label=build%20develop)](https://github.com/litetex/PullDetachedRemote/actions?query=workflow%3A%22Develop+CI%22)
 [![Build develop Sonar](https://dev.azure.com/litetex/PullDetachedRemote/_apis/build/status/develop?label=build%20develop%20sonar)](https://dev.azure.com/litetex/PullDetachedRemote/_build/latest?definitionId=7)
-[![Develop docker version](https://img.shields.io/badge/docker-develop-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=develop)
+[![Develop docker version](https://img.shields.io/badge/docker-develop-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=develop&page=1)
 
 # PullDetachedRemote
 Creates a detached upstream branch and a corresponding PR from another repo and updates it automatically
 
 Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached-remote)
 
+## Usage
+### 1. Run it over commandline (only)
+:point_right: ``--help`` 
+
+Arguments → [CmdOption](PullDetachedRemote/CMD/CmdOption.cs)
+#### Run standalone docker (example)
+```BASH
+docker run litetex/pulldetachedremote:develop -
+```
+### 2. Run it over YML-config file
+#### Generate a sample config file
+You can also generate a sample configuration file with:
+```BASH
+PullDetachedRemote.exe --genconf config.yml
+```
+### 3. Run it as hybrid :twisted_rightwards_arrows:
 
 ## Develop
 ### Tools for developing
@@ -25,6 +41,7 @@ Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached
 
 ### How to test
 My sample files for testing:
+
 launchSettings.json
 ```JSON
 {
