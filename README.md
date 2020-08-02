@@ -14,9 +14,8 @@ Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached
 ## Usage
 ### Inputs
 → https://github.com/litetex/pull-detached-remote#inputs
-#### Arguments
-:point_right: see also [action.yml](https://github.com/litetex/pull-detached-remote/blob/develop/action.yml) in the GitHub Action
 
+#### Arguments
 :point_right: ``--help`` 
 
 Arguments can be looked up in  [CmdOption](PullDetachedRemote/CMD/CmdOption.cs)
@@ -80,42 +79,54 @@ Checkout, how it is build in the [automated build plans](.github/workflows/)
 * Optional: Build the Dockerfile with [``docker build``](https://docs.docker.com/engine/reference/commandline/build/)
 
 ### How to test
-My sample files for testing:
+Sample files for testing:
 
-launchSettings.json
-```JSON
-{
-  "profiles": {
-    "PDR - GenConf": {
-      "commandName": "Project",
-      "commandLineArgs": "--genconf config.yml"
-    },
-    "PDR - Conf": {
-      "commandName": "Project",
-      "commandLineArgs": "--config config.yml --GITHUB_PAT=xxx"
-    },
-    "PDR - CMD": {
-      "commandName": "Project",
-      "commandLineArgs": "--identitymail=test@test.test --identityuser=\"Test Test\" --prlabels \"upstream\" --clonemode=CLONE_ALWAYS --originrepo=https://github.com/<owner>/forked --originbranch=an-update --upstreamrepo=https://github.com/<owner>/fork-base --upstreambranch=master --GITHUB_PAT=xxx"
+<details>
+  <summary>launchSettings.json</summary>
+  <p>
+  
+  * located under ``PullDetachedRemote/Properties``
+  
+  ```JSON
+  {
+    "profiles": {
+      "PDR - GenConf": {
+        "commandName": "Project",
+        "commandLineArgs": "--genconf config.yml"
+      },
+      "PDR - Conf": {
+        "commandName": "Project",
+        "commandLineArgs": "--config config.yml --GITHUB_PAT=xxx"
+      },
+      "PDR - CMD": {
+        "commandName": "Project",
+        "commandLineArgs": "--identitymail=test@test.test --identityuser=\"Test Test\" --prlabels \"upstream\" --clonemode=CLONE_ALWAYS --originrepo=https://github.com/<owner>/forked --originbranch=an-update --upstreamrepo=https://github.com/<owner>/fork-base --upstreambranch=master --GITHUB_PAT=xxx"
+      }
     }
   }
-}
-```
+  ```
+  </p>
+</details>
 
-config.yml
-```YML
-IdentityEmail: test@test.test
-IdentityUsername: Test Test
-PRMetaInfo:
-  Assignees: []
-  Reviewers: []
-  Labels: ['upstream']
-PathToWorkingRepo: test
-CloneMode: CLONE_ALWAYS
-OriginRepo: https://github.com/<owner>/forked
-OriginBranch: an-update
-UpstreamRepo: https://github.com/<owner>/fork-base
-UpstreamBranch: master
-OriginUpdateBranch: 
-UpstreamCredMode: AUTO
-```
+<details>
+  <summary>config.yml</summary>
+  <p>
+  
+  ```YML
+  IdentityEmail: test@test.test
+  IdentityUsername: Test Test
+  PRMetaInfo:
+    Assignees: []
+    Reviewers: []
+    Labels: ['upstream']
+  PathToWorkingRepo: test
+  CloneMode: CLONE_ALWAYS
+  OriginRepo: https://github.com/<owner>/forked
+  OriginBranch: an-update
+  UpstreamRepo: https://github.com/<owner>/fork-base
+  UpstreamBranch: master
+  OriginUpdateBranch: 
+  UpstreamCredMode: AUTO
+  ```
+  </p>
+</details>
