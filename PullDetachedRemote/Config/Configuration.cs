@@ -25,6 +25,14 @@ namespace PullDetachedRemote.Config
       public string IdentityUsername { get; set; } = null;
 
       /// <summary>
+      /// PullRequest Meta Info
+      /// </summary>
+      /// <remarks>
+      /// Required
+      /// </remarks>
+      public PullRequestMetaInfoConfig PRMetaInfo { get; set; } = new PullRequestMetaInfoConfig();
+
+      /// <summary>
       /// Path to working repo
       /// </summary>
       /// <remarks>
@@ -33,7 +41,7 @@ namespace PullDetachedRemote.Config
       public string PathToWorkingRepo { get; set; } = "workdir/gitrepo";
 
       /// <summary>
-      /// Clonesmode for the repo in <see cref="PathToWorkingRepo"/>
+      /// Clonemode for the repo in <see cref="PathToWorkingRepo"/>
       /// </summary>
       public CloneMode CloneMode { get; set; } = CloneMode.DO_NOTHING;
 
@@ -65,7 +73,7 @@ namespace PullDetachedRemote.Config
       /// Detached remote branch that should be used.
       /// </summary>
       /// <remarks>
-      /// Optional; WARNING: It's recommend to set this branch, otherwise the process may be inperformant
+      /// Optional; WARNING: It's recommend to set this branch, otherwise the process may suffer poor performance
       /// </remarks>
       public string UpstreamBranch { get; set; }
 

@@ -19,28 +19,46 @@
       },
       "Litetex.CoreFramework.Config.Yaml": {
         "type": "Direct",
-        "requested": "[2020.5.21.183627, )",
-        "resolved": "2020.5.21.183627",
-        "contentHash": "VIK5Y5OR+SfPQWRZISc/eY2bmRb7n5meUT9TpuEC4aF3vqcXCBt94P2kroO8xaGwdnEQNwcW4BC1NENXgMbh3A==",
+        "requested": "[2020.7.7.1732, )",
+        "resolved": "2020.7.7.1732",
+        "contentHash": "drz/shXC0yRsN4hMFfRgmdHR1gkTR9HnImelM11JbBGmxnkrJD2wPaecblcHUI3ty7HxzlhBKKewS0RpDGElcA==",
         "dependencies": {
-          "Litetex.CoreFramework.Config": "2020.5.21.183627",
-          "YamlDotNet": "8.1.1"
-        }
-      },
-      "Litetex.CoreFramework.CrashLogging": {
-        "type": "Direct",
-        "requested": "[2020.5.21.183627, )",
-        "resolved": "2020.5.21.183627",
-        "contentHash": "A6d26Pd/vyMSvYXLI1sPV2a6esVt1ENOXqAKttPB9IAjW5rqxu4N7YbAgfYCm25f+v1Wd75dL31sZ0Tq9dkQ8A==",
-        "dependencies": {
-          "Litetex.CoreFramework.Logging": "2020.5.21.183627"
+          "Litetex.CoreFramework.Config": "2020.7.7.1732",
+          "YamlDotNet": "8.1.2"
         }
       },
       "Octokit": {
         "type": "Direct",
-        "requested": "[0.47.0, )",
-        "resolved": "0.47.0",
-        "contentHash": "q1TWsMEjxG7Eb7YFrXm3MWgSPsMvPKxrIF//tuUPd9i/SS/fG7PerKr088E8AOoAFcHqMqouSrW0iAg2WgskDA=="
+        "requested": "[0.48.0, )",
+        "resolved": "0.48.0",
+        "contentHash": "WitpE+15EL9+vwxPg92O3uTfMJsAdN+wTZfU3dgr7KPItAfoWgsoLudzfEisHHKAROTJsPi/9mV9yGTA34hYAQ=="
+      },
+      "Serilog": {
+        "type": "Direct",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
+      },
+      "Serilog.Enrichers.Thread": {
+        "type": "Direct",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "85lWsGRJpRxvKT6j/H67no55SUBsBIvp556TKuBTGhjtoPeq+L7j/sDWbgAtvT0p7u7/phJyX6j35PQ4Vtqw0g==",
+        "dependencies": {
+          "Serilog": "2.3.0"
+        }
+      },
+      "Serilog.Sinks.Console": {
+        "type": "Direct",
+        "requested": "[3.1.1, )",
+        "resolved": "3.1.1",
+        "contentHash": "56mI5AqvyF/i/c2451nvV71kq370XOCE4Uu5qiaJ295sOhMb9q3BWwG7mWLOVSnmpWiq0SBT3SXfgRXGNP6vzA==",
+        "dependencies": {
+          "Serilog": "2.5.0",
+          "System.Console": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
+        }
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
@@ -49,27 +67,15 @@
       },
       "Litetex.CoreFramework.Base": {
         "type": "Transitive",
-        "resolved": "2020.5.21.183627",
-        "contentHash": "OSZoVPh02Fa0xMC13lGeot/oS0l63xLDmHqk4GcQDu4qAv3Ivmcn1+lyNFLSaPJ6z4kZE4iOgQkPvOmiOrgoXA=="
+        "resolved": "2020.7.7.1732",
+        "contentHash": "JbX70txnTJ2kSpSVr//MGjlm5nmdYN1pYMIfg7mcEbIYaLsSaZCGvBEIygPaoduMMEklhvFeCM5sQvvaniYeNw=="
       },
       "Litetex.CoreFramework.Config": {
         "type": "Transitive",
-        "resolved": "2020.5.21.183627",
-        "contentHash": "brJokuJykRJNPHkUZOsLVDQkcvxMMedR48kZHxMzCu6i3egVk2Lyrl2T/YqO7vnp13I2KjTz2qV4zSlngJa/Ag==",
+        "resolved": "2020.7.7.1732",
+        "contentHash": "P0f7dWap7TeMR62+OU9RtYTKbJDTgSSwb3vhkLEeJzUQTmoraFmEemOQdSo2M57ptoJ8eHY4bbRcgfcwNeaahg==",
         "dependencies": {
-          "Litetex.CoreFramework.Base": "2020.5.21.183627"
-        }
-      },
-      "Litetex.CoreFramework.Logging": {
-        "type": "Transitive",
-        "resolved": "2020.5.21.183627",
-        "contentHash": "ZEDMWqD6UC/gzoC5izissFouoQwcDJ8bKx9jDyUPSMkaFowtvQCCXN3AjEBx0cPom0HDu+pgw08/n2YJdO6RJg==",
-        "dependencies": {
-          "Litetex.CoreFramework.Base": "2020.5.21.183627",
-          "Serilog": "2.9.0",
-          "Serilog.Enrichers.Thread": "3.1.0",
-          "Serilog.Sinks.Console": "3.1.1",
-          "Serilog.Sinks.File": "4.1.0"
+          "Litetex.CoreFramework.Base": "2020.7.7.1732"
         }
       },
       "Microsoft.NETCore.Platforms": {
@@ -89,41 +95,6 @@
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
           "Microsoft.NETCore.Targets": "1.1.0"
-        }
-      },
-      "Serilog": {
-        "type": "Transitive",
-        "resolved": "2.9.0",
-        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
-      },
-      "Serilog.Enrichers.Thread": {
-        "type": "Transitive",
-        "resolved": "3.1.0",
-        "contentHash": "85lWsGRJpRxvKT6j/H67no55SUBsBIvp556TKuBTGhjtoPeq+L7j/sDWbgAtvT0p7u7/phJyX6j35PQ4Vtqw0g==",
-        "dependencies": {
-          "Serilog": "2.3.0"
-        }
-      },
-      "Serilog.Sinks.Console": {
-        "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "56mI5AqvyF/i/c2451nvV71kq370XOCE4Uu5qiaJ295sOhMb9q3BWwG7mWLOVSnmpWiq0SBT3SXfgRXGNP6vzA==",
-        "dependencies": {
-          "Serilog": "2.5.0",
-          "System.Console": "4.3.0",
-          "System.Runtime.InteropServices": "4.3.0",
-          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
-        }
-      },
-      "Serilog.Sinks.File": {
-        "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "U0b34w+ZikbqWEZ3ui7BdzxY/19zwrdhLtI3o6tfmLdD3oXxg7n2TZJjwCCTlKPgRuYic9CBWfrZevbb70mTaw==",
-        "dependencies": {
-          "Serilog": "2.5.0",
-          "System.IO.FileSystem": "4.0.1",
-          "System.Text.Encoding.Extensions": "4.0.11",
-          "System.Threading.Timer": "4.0.1"
         }
       },
       "System.Console": {
@@ -158,29 +129,6 @@
           "System.Runtime": "4.3.0",
           "System.Text.Encoding": "4.3.0",
           "System.Threading.Tasks": "4.3.0"
-        }
-      },
-      "System.IO.FileSystem": {
-        "type": "Transitive",
-        "resolved": "4.0.1",
-        "contentHash": "IBErlVq5jOggAD69bg1t0pJcHaDbJbWNUZTPI96fkYWzwYbN6D9wRHMULLDd9dHsl7C2YsxXL31LMfPI1SWt8w==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.NETCore.Targets": "1.0.1",
-          "System.IO": "4.1.0",
-          "System.IO.FileSystem.Primitives": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Handles": "4.0.1",
-          "System.Text.Encoding": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
-        }
-      },
-      "System.IO.FileSystem.Primitives": {
-        "type": "Transitive",
-        "resolved": "4.0.1",
-        "contentHash": "kWkKD203JJKxJeE74p8aF8y4Qc9r9WQx4C0cHzHPrY3fv/L/IhWnyCHaFJ3H1QPOH6A93whlQ2vG5nHlBDvzWQ==",
-        "dependencies": {
-          "System.Runtime": "4.1.0"
         }
       },
       "System.Reflection": {
@@ -284,17 +232,6 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Text.Encoding.Extensions": {
-        "type": "Transitive",
-        "resolved": "4.0.11",
-        "contentHash": "jtbiTDtvfLYgXn8PTfWI+SiBs51rrmO4AAckx4KR6vFK9Wzf6tI8kcRdsYQNwriUeQ1+CtQbM1W4cMbLXnj/OQ==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.NETCore.Targets": "1.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Text.Encoding": "4.0.11"
-        }
-      },
       "System.Threading": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -314,20 +251,10 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Threading.Timer": {
-        "type": "Transitive",
-        "resolved": "4.0.1",
-        "contentHash": "saGfUV8uqVW6LeURiqxcGhZ24PzuRNaUBtbhVeuUAvky1naH395A/1nY0P2bWvrw/BreRtIB/EzTDkGBpqCwEw==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.NETCore.Targets": "1.0.1",
-          "System.Runtime": "4.1.0"
-        }
-      },
       "YamlDotNet": {
         "type": "Transitive",
-        "resolved": "8.1.1",
-        "contentHash": "JXPO7bjUUeDIXgzlLAdNFCzrxBxBzYBbXy3MEp2uWIY7KK8LoNogaPhSg2mLuzCN5flp1ydeVqm+4j3tkP0pow=="
+        "resolved": "8.1.2",
+        "contentHash": "GlPKbb4l+91dyYVKV7UnJlr2CWooNNM1ayZWC90QAmlFPgbwSkfhgId7dGjTAHqkB84BZqjMSy5PlAYf1iejVA=="
       }
     }
   }

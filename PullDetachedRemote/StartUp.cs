@@ -1,11 +1,12 @@
-﻿using CoreFramework.Base.Util;
-using CoreFramework.Config;
+﻿using CoreFramework.Config;
 using PullDetachedRemote.CMD;
 using PullDetachedRemote.Config;
+using PullDetachedRemote.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace PullDetachedRemote
@@ -88,7 +89,9 @@ namespace PullDetachedRemote
          var cps = new PropertySetter()
          {
             SetLog = "SetInp",
-            SetFaultyLog = "SetInpFaulty"
+            SetFaultyLog = "SetInpFaulty",
+            Log = text => Log.Info(text),
+            FaultyLog = text => Log.Warn(text)
          };
 
          cps.SetStringSecret(() => CmdOption.GITHUB_TOKEN, v => Config.GitHubToken = v, nameof(Config.GitHubToken));
@@ -98,6 +101,11 @@ namespace PullDetachedRemote
 
          cps.SetString(() => CmdOption.IdentityEmail, v => Config.IdentityEmail = v, nameof(Config.IdentityEmail));
          cps.SetString(() => CmdOption.IdentityUsername, v => Config.IdentityUsername = v, nameof(Config.IdentityUsername));
+
+         cps.SetStringCollection(() => ToList(CmdOption.PRAssignees), v => Config.PRMetaInfo.Assignees = v, nameof(Config.PRMetaInfo.Assignees));
+         cps.SetStringCollection(() => ToList(CmdOption.PRReviewers), v => Config.PRMetaInfo.Reviewers = v, nameof(Config.PRMetaInfo.Reviewers));
+         cps.SetStringCollection(() => ToList(CmdOption.PRLabels), v => Config.PRMetaInfo.Labels = v, nameof(Config.PRMetaInfo.Labels));
+
          cps.SetString(() => CmdOption.PathToWorkingRepo, v => Config.PathToWorkingRepo = v, nameof(Config.PathToWorkingRepo));
          cps.SetEnum<CloneMode>(() => CmdOption.CloneMode, v => Config.CloneMode = v, nameof(Config.CloneMode));
          cps.SetString(() => CmdOption.OriginRepo, v => Config.OriginRepo = v, nameof(Config.OriginRepo));
@@ -108,6 +116,18 @@ namespace PullDetachedRemote
          cps.SetEnum<UpstreamRepoCredentialsMode>(() => CmdOption.UpstreamCredMode, v => Config.UpstreamCredMode = v, nameof(Config.UpstreamCredMode));
       }
 
+      private ICollection<string> ToList(string input, char separator = ',')
+      {
+         if (input == null)
+            return new List<string>();
+
+         return new List<string>(
+            input.Split(separator, StringSplitOptions.RemoveEmptyEntries)
+               .Select(str => str.Trim())
+               .Where(str => str.Length > 0)
+           );
+      }
+
 
       protected void ReadEnvConfig()
       {
@@ -116,7 +136,9 @@ namespace PullDetachedRemote
          var cps = new PropertySetter()
          {
             SetLog = "SetEnv",
-            SetFaultyLog = "SetEnvFaulty"
+            SetFaultyLog = "SetEnvFaulty",
+            Log = text => Log.Info(text),
+            FaultyLog = text => Log.Warn(text)
          };
 
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("GITHUB_TOKEN"), v => Config.GitHubToken = v, nameof(Config.GitHubToken));

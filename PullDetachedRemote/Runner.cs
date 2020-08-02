@@ -52,6 +52,12 @@ namespace PullDetachedRemote
 
          if (string.IsNullOrWhiteSpace(Config.UpstreamBranch))
             Config.UpstreamBranch = null; // Process it later!
+
+         if (Config.PRMetaInfo == null)
+         {
+            Log.Warn($"{nameof(Config.PRMetaInfo)} was not set! Setting it to default value. PLEASE FIX the config");
+            Config.PRMetaInfo = new PullRequestMetaInfoConfig();
+         }
       }
 
       #endregion Init
@@ -77,48 +83,7 @@ namespace PullDetachedRemote
                          Password = ""
                       });
 
-            CredentialsHandler upstreamCredentialsHandler = null;
-
-            switch(Config.UpstreamCredMode)
-            {
-               case UpstreamRepoCredentialsMode.AUTO:
-                  Log.Info($"Automatically determining auth of upstream-remote");
-
-#pragma warning disable S907 // "goto" statement should not be used
-                  if (Config.UpstreamRepo.StartsWith("https://github.com/"))
-                     goto case UpstreamRepoCredentialsMode.GITHUB;
-                  else if (!string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
-                     goto case UpstreamRepoCredentialsMode.CUSTOM;
-                  else
-                     goto default;
-#pragma warning restore S907 // "goto" statement should not be used
-
-               case UpstreamRepoCredentialsMode.GITHUB:
-                  Log.Info($"Will auth upstream-remote with GitHub credentials");
-
-                  upstreamCredentialsHandler = originCredentialsHandler;
-
-                  break;
-
-               case UpstreamRepoCredentialsMode.CUSTOM:
-                  Log.Info($"Will auth upstream-remote with custom credentials");
-
-                  upstreamCredentialsHandler = new CredentialsHandler(
-                   (url, usernameFromUrl, types) =>
-                       new UsernamePasswordCredentials()
-                       {
-                          Username = Config.DetachedCredsPrinicipal,
-                          Password = Config.DetachedCredsPassword ?? ""
-                       });
-
-                  break;
-
-               default:
-                  Log.Info($"Will auth upstream-remote with NO credentials");
-
-                  break;
-            }
-
+            var upstreamCredentialsHandler = GetUpstreamCredentialsHandler(originCredentialsHandler);
 
             InitRepo();
 
@@ -182,6 +147,9 @@ namespace PullDetachedRemote
                status.UpdatedPRSuccessfully = true;
                try
                {
+                  if (status.CreatedPR)
+                     GitHubWorkflow.SetMetaToNewPR(status);
+
                   GitHubWorkflow.SetPRStatus(status);
                }
                catch
@@ -195,6 +163,45 @@ namespace PullDetachedRemote
          Log.Info("Finished run");
 
          Log.Info($"=== STATUS REPORT ===\r\n{status}");
+      }
+
+      private CredentialsHandler GetUpstreamCredentialsHandler(CredentialsHandler originCredentialsHandler)
+      {
+         switch (Config.UpstreamCredMode)
+         {
+            case UpstreamRepoCredentialsMode.AUTO:
+               Log.Info($"Automatically determining auth of upstream-remote");
+
+#pragma warning disable S907 // "goto" statement should not be used
+               if (Config.UpstreamRepo.StartsWith("https://github.com/"))
+                  goto case UpstreamRepoCredentialsMode.GITHUB;
+               else if (!string.IsNullOrWhiteSpace(Config.DetachedCredsPrinicipal))
+                  goto case UpstreamRepoCredentialsMode.CUSTOM;
+               else
+                  goto default;
+#pragma warning restore S907 // "goto" statement should not be used
+
+            case UpstreamRepoCredentialsMode.GITHUB:
+               Log.Info($"Will auth upstream-remote with GitHub credentials");
+
+               return originCredentialsHandler;
+
+            case UpstreamRepoCredentialsMode.CUSTOM:
+               Log.Info($"Will auth upstream-remote with custom credentials");
+
+               return new CredentialsHandler(
+                (url, usernameFromUrl, types) =>
+                    new UsernamePasswordCredentials()
+                    {
+                       Username = Config.DetachedCredsPrinicipal,
+                       Password = Config.DetachedCredsPassword ?? ""
+                    });
+
+            default:
+               Log.Info($"Will auth upstream-remote with NO credentials");
+
+               return null;
+         }
       }
 
       private void InitRepo()

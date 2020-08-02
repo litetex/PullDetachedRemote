@@ -1,4 +1,6 @@
-﻿using Octokit;
+﻿using CoreFramework.Base.Tasks;
+using Octokit;
+using PullDetachedRemote.Workflow.PullRequestProcessor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -214,6 +216,23 @@ namespace PullDetachedRemote.Workflow
          return true;
       }
 
+      public void SetMetaToNewPR(StatusReport status)
+      {
+         Issue issue = null;
+
+         if (Config.PRMetaInfo.Assignees != null && Config.PRMetaInfo.Assignees.Count > 0 ||
+            Config.PRMetaInfo.Labels != null && Config.PRMetaInfo.Labels.Count > 0)
+            issue = RepoClient.Issue.Get(Repo.Id, PullRequest.Number).Result;
+
+         Log.Info("Waiting for post processing tasks of PR to end");
+         TaskRunner.RunTasks(
+            Task.Run(() => new PullRequestAssigneeProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run(issue)),
+            Task.Run(() => new PullRequestLabelProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run(issue)),
+            Task.Run(() => new PullRequestReviewerProcessor(Config.PRMetaInfo, RepoClient, Repo, PullRequest, status).Run())
+         );
+         Log.Info("All tasks are done");
+      }
+
       const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
       const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
 
@@ -237,11 +256,15 @@ namespace PullDetachedRemote.Workflow
             }
          }
 
+         string createdPRMessage = "";
+         if (status.CreatedPR)
+            createdPRMessage = $"\r\nIncoming upstream update from [{Config.UpstreamRepo}]({Config.UpstreamRepo}) {(!string.IsNullOrWhiteSpace(Config.UpstreamBranch) ? $" *branch=``{Config.UpstreamBranch}``*" :"")}";
+
          Log.Info($"Updating PR[ID='{PullRequest.Id}']");
 
          PullRequest = RepoClient.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
-            Body = $"{beforeStatus}" +
+            Body = $"{createdPRMessage}{beforeStatus}" +
                $"\r\n" +
                $"<details>" +
                $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
@@ -254,7 +277,16 @@ namespace PullDetachedRemote.Workflow
 
       public void Dispose()
       {
-         Log.Info("Disposing");
+         Dispose(true);
+         GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+         if (disposing)
+            Log.Info("Disposing");
+         else
+            Log.Info("Disposing via deconstructor");
 
          if (AsyncConstructTask != null)
          {
@@ -262,6 +294,7 @@ namespace PullDetachedRemote.Workflow
 
             if (AsyncConstructTask.IsCompleted)
                AsyncConstructTask.Dispose();
+
             AsyncConstructTask = null;
             Log.Info($"Disposed {nameof(AsyncConstructTask)}");
          }
@@ -269,6 +302,11 @@ namespace PullDetachedRemote.Workflow
 
          RepoClient = null;
          GeneralClient = null;
+      }
+
+      ~GithubWorkflow()
+      {
+         Dispose(false);
       }
    }
 }

@@ -333,10 +333,20 @@ namespace PullDetachedRemote.Workflow
 
       public void Dispose()
       {
-         Log.Info("Disposing");
+         Dispose(true);
+         GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+         if (disposing)
+            Log.Info("Disposing");
+         else
+            Log.Info("Disposing via deconstructor");
+
          if (Repo != null)
          {
-            if(UpstreamRemote != null)
+            if (UpstreamRemote != null)
                DetachUpstreamRemote();
 
             Repo.Dispose();
@@ -345,6 +355,11 @@ namespace PullDetachedRemote.Workflow
 
             Repo = null;
          }
+      }
+
+      ~GitWorkflow()
+      {
+         Dispose(false);
       }
    }
 }
