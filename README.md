@@ -7,8 +7,6 @@
 [![Develop docker version](https://img.shields.io/badge/docker-develop-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=develop&page=1)
 
 # PullDetachedRemote
-Creates a detached upstream branch and a corresponding PR from another repo and updates it automatically
-
 Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached-remote)
 
 ## Usage
