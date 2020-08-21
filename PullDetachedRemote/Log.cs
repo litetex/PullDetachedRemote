@@ -6,9 +6,6 @@ using System.Text;
 
 namespace PullDetachedRemote
 {
-   /// <summary>
-   /// Adapter for CoreFramework
-   /// </summary>
    internal static class Log
    {
       private static string FormatForException(this string message, Exception ex)
