@@ -1,8 +1,15 @@
-name: Develop CI
+name: Check Build
 
-on:
+on: 
+  workflow_dispatch:
   push:
-    branches: develop
+    branches: [ develop ]
+    paths-ignore: 
+      - '**.md'
+  pull_request:
+    branches: [ develop ]
+    paths-ignore: 
+      - '**.md'
 
 jobs:
   build:
@@ -15,7 +22,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1
+        dotnet-version: 3.1.x
       
     - name: Install dependencies
       run: dotnet restore
@@ -28,7 +35,7 @@ jobs:
      
     - name: Publish
       working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r alpine.3.9-x64 /p:PublishSingleFile=true
+      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
         
     - name: Copy Dockerfile into build output
       run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
