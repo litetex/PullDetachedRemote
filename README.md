@@ -1,4 +1,4 @@
-# PullDetachedRemote  [![Latest Version](https://img.shields.io/github/v/release/litetex/PullDetachedRemote)](https://github.com/litetex/PullDetachedRemote/releases) [![Latest stable docker version](https://img.shields.io/badge/docker-latest-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=latest)
+# PullDetachedRemote  [![Latest Version](https://img.shields.io/github/v/release/litetex/PullDetachedRemote)](https://github.com/litetex/PullDetachedRemote/releases)
 
 Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached-remote)
 
