@@ -2,9 +2,9 @@
 
 Docker-Image for [pull-detached-remote](https://github.com/litetex/pull-detached-remote)
 
-## [Usage](docs/Usage.md)
+### [Usage](docs/Usage.md)
 
-## Build
+### Build
 | Branch | Build | Build sonar | Docker |
 | --- | --- | --- | --- |
 | master | [![Build](https://img.shields.io/github/workflow/status/litetex/PullDetachedRemote/Master%20CI)](https://github.com/litetex/PullDetachedRemote/actions?query=workflow%3A%22Master+CI%22) | [![Build Sonar](https://dev.azure.com/litetex/PullDetachedRemote/_apis/build/status/master?label=sonar)](https://dev.azure.com/litetex/PullDetachedRemote/_build/latest?definitionId=8) | [![Latest stable docker version](https://img.shields.io/badge/docker-latest-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=latest) |
@@ -14,4 +14,4 @@ Wan't to build the project by yourself?
 
 Checkout, how it is build in the [automated build plans](.github/workflows/)
 
-## [Developing](docs/Developing.md)
+### [Developing](docs/Developing.md)
