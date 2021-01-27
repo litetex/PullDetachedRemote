@@ -52,6 +52,8 @@ jobs:
     - name: Build Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
       uses: elgohr/Publish-Docker-Github-Action@master
+      # Only run this on the develop Branch (push)
+      if: github.ref == 'refs/heads/develop'
       with:
         name: litetex/pulldetachedremote
         username: ${{ secrets.DOCKER_USERNAME }}
