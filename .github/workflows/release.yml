@@ -1,4 +1,4 @@
-name: Master CI
+name: Release
 
 on:
   push:
@@ -18,16 +18,18 @@ jobs:
       
     - name: Install dependencies
       run: dotnet restore
+      working-directory: src
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+      working-directory: src
       
     - name: Test
       run: dotnet test --no-restore --verbosity normal
      
     - name: Publish
-      working-directory: PullDetachedRemote
       run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
+      working-directory: src/PullDetachedRemote
         
     - name: Release - Create Draft for Release
       id: create_draft
@@ -49,12 +51,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_draft.outputs.upload_url }} 
-        asset_path: ./PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/PullDetachedRemote
+        asset_path: ./src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/PullDetachedRemote
         asset_name: PullDetachedRemote
         asset_content_type: application/octet-stream
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
