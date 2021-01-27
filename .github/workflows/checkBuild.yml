@@ -26,19 +26,22 @@ jobs:
       
     - name: Install dependencies
       run: dotnet restore
+      working-directory: src
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+      working-directory: src
       
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+      working-directory: src
      
     - name: Publish
-      working-directory: PullDetachedRemote
       run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
+      working-directory: src/PullDetachedRemote
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
