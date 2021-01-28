@@ -96,7 +96,7 @@ namespace PullDetachedRemote
             GitHubWorkflow.Init(GitWorkflow.OriginRepoUrl);
 
             var createdBranch = GitWorkflow.CheckoutOriginUpdateBranch();
-            status.CreatedBranch = createdBranch;
+            status.CreatedNewBranch = createdBranch;
 
             var needsNewCommits = GitWorkflow.HasUpstreamBranchNewCommitsForUpdateBranch();
 
@@ -107,15 +107,17 @@ namespace PullDetachedRemote
 
                if(hasCommitsFromNonUpstream)
                {
-                  Log.Info("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram. This may cause conflicts...");
-                  status.Messages.Add("There are commits from outside upstream on the origin-update branch AND new commits coming from upstram");
+                  var msg = "There are commits from outside upstream on the origin-update branch AND new commits coming from upstram";
+
+                  Log.Info($"{msg}. This may cause conflicts.");
+                  status.Messages.Add(msg);
                }
 
                var success = GitWorkflow.UpdateBranchFromUpstream();
 
-               if(!success)
+               // Handle failure
+               if (!success)
                {
-                  //Handle failure!
                   Log.Error("Unable to update branch from upstream");
 
                   status.Error = true;
@@ -127,10 +129,11 @@ namespace PullDetachedRemote
 
             if (!GitWorkflow.HasUpdateBranchNewerCommitsThanPRTargetedBranch(GitHubWorkflow.TargetPRBranchName))
             {
-               Log.Info("Can't create a PR when the pr-base branch has no newer commits than the targeted-branch");
-               status.Messages.Add("Can't create a PR when the pr-base branch has no newer commits than the targeted-branch");
+               var msg = "Can't create a PR when the pr-base branch has no newer commits than the targeted-branch";
+               Log.Info(msg);
+               status.Messages.Add(msg);
 
-               status.PRBaseNotBeforeTarget = true;
+               status.NoNewCommitsOnBaseBranch = true;
             }
             else
             {
@@ -143,20 +146,13 @@ namespace PullDetachedRemote
                }
 
                status.CreatedPR = GitHubWorkflow.EnsurePullRequestCreated(GitWorkflow.UpstreamRepoUrl, GitWorkflow.OriginUpdateBranchName);
+              
+               if (status.CreatedPR)
+                  GitHubWorkflow.SetMetaToNewPR(status);
+
+               GitHubWorkflow.SetPRStatus(status);
 
                status.UpdatedPRSuccessfully = true;
-               try
-               {
-                  if (status.CreatedPR)
-                     GitHubWorkflow.SetMetaToNewPR(status);
-
-                  GitHubWorkflow.SetPRStatus(status);
-               }
-               catch
-               {
-                  status.UpdatedPRSuccessfully = false;
-                  throw;
-               }
             }
          }
 
@@ -225,7 +221,7 @@ namespace PullDetachedRemote
       {
          if(Config.UpstreamBranch == null)
          {
-            Log.Warn($"{nameof(Config.UpstreamBranch)} is not set! auto detecting default upstream branch... May take some time and memory");
+            Log.Warn($"{nameof(Config.UpstreamBranch)} is not set! Autodetecting default upstream branch... May take some time and memory");
 
             Config.UpstreamBranch = gitWorkflow.GetDefaultUpstreamBranch();
 
