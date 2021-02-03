@@ -86,6 +86,14 @@ namespace PullDetachedRemote.Config
       public string OriginUpdateBranch { get; set; }
 
       /// <summary>
+      /// Ignores the protocol (http/https/...) when generating the <see cref="OriginUpdateBranch"/>
+      /// </summary>
+      /// <remarks>
+      /// Optional;
+      /// </remarks>
+      public bool IgnoreUpstreamRepoProtocolInOriginUpdateBranch { get; set; } = false;
+
+      /// <summary>
       /// GITHUB_TOKEN <para/>
       /// used for:
       /// <list type="bullet">

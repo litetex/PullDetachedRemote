@@ -112,6 +112,7 @@ namespace PullDetachedRemote
          cps.SetString(() => CmdOption.OriginBranch, v => Config.OriginBranch = v, nameof(Config.OriginBranch));
          cps.SetString(() => CmdOption.UpstreamRepo, v => Config.UpstreamRepo = v, nameof(Config.UpstreamRepo));
          cps.SetString(() => CmdOption.UpstreamBranch, v => Config.UpstreamBranch = v, nameof(Config.UpstreamBranch));
+         cps.Set(() => CmdOption.IgnoreUpstreamRepoProtocolInOriginUpdateBranch, v => Config.IgnoreUpstreamRepoProtocolInOriginUpdateBranch = v, nameof(Config.IgnoreUpstreamRepoProtocolInOriginUpdateBranch));
          cps.SetString(() => CmdOption.OriginUpdateBranch, v => Config.OriginUpdateBranch = v, nameof(Config.OriginUpdateBranch));
          cps.SetEnum<UpstreamRepoCredentialsMode>(() => CmdOption.UpstreamCredMode, v => Config.UpstreamCredMode = v, nameof(Config.UpstreamCredMode));
       }
