@@ -229,11 +229,23 @@ namespace PullDetachedRemote
          }
 
          if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
-            Config.OriginUpdateBranch = $"upstreamupdate/{Config.UpstreamRepo}/{Config.UpstreamBranch}";
+         {
+            var repoName = Config.UpstreamRepo;
+            if (repoName.StartsWith("https:") || repoName.StartsWith("http:"))
+            {
+               var newRepoName = repoName[(repoName.IndexOf(':') + 1)..];
+               if(!string.IsNullOrWhiteSpace(newRepoName)) 
+                  repoName = newRepoName;
+            }
+
+            Config.OriginUpdateBranch = $"upstreamupdate/{repoName}/{Config.UpstreamBranch}";
+         }
 
          Config.OriginUpdateBranch = GitBranchNormalizer.Fix(Config.OriginUpdateBranch);
          if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
             throw new ArgumentException($"{nameof(Config.OriginUpdateBranch)}[='{Config.OriginUpdateBranch}'] is invalid");
+
+         Log.Info($"{nameof(Config.OriginUpdateBranch)} is '{Config.OriginUpdateBranch}'"):
       }
 
 
