@@ -245,7 +245,7 @@ namespace PullDetachedRemote
          if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
             throw new ArgumentException($"{nameof(Config.OriginUpdateBranch)}[='{Config.OriginUpdateBranch}'] is invalid");
 
-         Log.Info($"{nameof(Config.OriginUpdateBranch)} is '{Config.OriginUpdateBranch}'"):
+         Log.Info($"{nameof(Config.OriginUpdateBranch)} is '{Config.OriginUpdateBranch}'");
       }
 
 
