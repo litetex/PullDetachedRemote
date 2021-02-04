@@ -146,6 +146,9 @@ namespace PullDetachedRemote
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("GITHUB_PAT"), v => Config.GitHubPAT = v, nameof(Config.GitHubPAT));
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("DETACHED_CREDS_PRINCIPAL"), v => Config.DetachedCredsPrinicipal = v, nameof(Config.DetachedCredsPrinicipal));
          cps.SetStringSecret(() => Environment.GetEnvironmentVariable("DETACHED_CREDS_PW"), v => Config.DetachedCredsPassword = v, nameof(Config.DetachedCredsPassword));
+
+         cps.SetBool(() => Environment.GetEnvironmentVariable("NO_CREDITS"), v => Config.HideCredits = v, nameof(Config.HideCredits));
+         cps.SetBool(() => Environment.GetEnvironmentVariable("NO_PR_STATUS"), v => Config.HidePRStatus = v, nameof(Config.HidePRStatus));
       }
 
       protected void DoStart()

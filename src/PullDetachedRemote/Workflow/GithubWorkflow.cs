@@ -269,21 +269,26 @@ namespace PullDetachedRemote.Workflow
          if (status.CreatedPR)
             createdPRMessage = $"\r\nIncoming upstream update from [{Config.UpstreamRepo}]({Config.UpstreamRepo}) {(!string.IsNullOrWhiteSpace(Config.UpstreamBranch) ? $" *branch=``{Config.UpstreamBranch}``*" :"")}";
 
+         var statusMsg = "";
+         if (!Config.HidePRStatus)
+            statusMsg = $"\r\n" +
+               $"<details>" +
+               $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
+               $"<p>\r\n\r\n```\r\n{status}```\r\n</p>" +
+               $"</details>\r\n";
+
+         var credits = "";
+         if (!Config.HideCredits)
+            credits = $"<sub>Automatically created by " +
+               $"<a href=\"https://github.com/litetex/pull-detached-remote\">" +
+               $"<img src=\"https://raw.githubusercontent.com/litetex/PullDetachedRemote/develop/logo.png\" height=15></img>" +
+               $" {nameof(PullDetachedRemote)}</a></sub>";
+
          Log.Info($"Updating PR[ID='{PullRequest.Id}']");
 
          PullRequest = RepoClient.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
-            Body = $"{createdPRMessage}{beforeStatus}" +
-               $"\r\n" +
-               $"<details>" +
-               $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
-               $"<p>\r\n\r\n```\r\n{status}```\r\n</p>" +
-               $"</details>\r\n" +
-               $"<sub>Automatically created by " +
-               $"<a href=\"https://github.com/litetex/pull-detached-remote\">" +
-               $"<img src=\"https://raw.githubusercontent.com/litetex/PullDetachedRemote/develop/logo.png\" height=15></img>" +
-               $" {nameof(PullDetachedRemote)}</a></sub>" +
-               $"{afterStatus}",
+            Body = $"{createdPRMessage}{beforeStatus}{statusMsg}{credits}{afterStatus}",
          }).Result;
          Log.Info($"Updated PR[ID='{PullRequest.Id}']");
       }
