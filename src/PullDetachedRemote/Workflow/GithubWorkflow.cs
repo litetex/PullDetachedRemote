@@ -233,26 +233,35 @@ namespace PullDetachedRemote.Workflow
          Log.Info("All tasks are done");
       }
 
-      const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
-      const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
+      const string STATUS_START_OLD = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-start'/>";
+      const string STATUS_START = "<span class='DON-NOT-MOFIY-automated-pr-status-start'/>";
+      const string STATUS_END_OLD = "<span class='DON-NOT-MOFIY-automated-pullrequest-status-end'/>";
+      const string STATUS_END = "<span class='DON-NOT-MOFIY-automated-pr-status-end'/>";
 
       public void SetPRStatus(StatusReport status)
       {
          var prBody = PullRequest.Body ?? "";
 
-         var beforeStatus = prBody + STATUS_START;
-         var afterStatus = STATUS_END;
+         var beforeStatus = prBody + STATUS_START + "\r\n";
+         var afterStatus = "\r\n" + STATUS_END;
 
-         if (prBody.Contains(STATUS_START))
+         if (prBody.Contains(STATUS_START) || prBody.Contains(STATUS_START_OLD))
          {
             int startIndex = prBody.IndexOf(STATUS_START);
+
+            if (startIndex == -1)
+               startIndex = prBody.IndexOf(STATUS_START_OLD);
+
             beforeStatus = prBody.Substring(0, startIndex) + STATUS_START;
 
             var strAfterBeforeStatus = prBody.Substring(startIndex + STATUS_START.Length);
-            if (strAfterBeforeStatus.Contains(STATUS_END))
+            if (strAfterBeforeStatus.Contains(STATUS_END) || strAfterBeforeStatus.Contains(STATUS_END_OLD))
             {
-               int endIndex = strAfterBeforeStatus.IndexOf(STATUS_END);
-               afterStatus = strAfterBeforeStatus.Substring(endIndex);
+               int endIndex = strAfterBeforeStatus.IndexOf(STATUS_END) + STATUS_END.Length;
+               if(endIndex == -1)
+                  endIndex = strAfterBeforeStatus.IndexOf(STATUS_END_OLD) + STATUS_END_OLD.Length;
+
+               afterStatus = STATUS_END + strAfterBeforeStatus.Substring(endIndex);
             }
          }
 
@@ -260,17 +269,26 @@ namespace PullDetachedRemote.Workflow
          if (status.CreatedPR)
             createdPRMessage = $"\r\nIncoming upstream update from [{Config.UpstreamRepo}]({Config.UpstreamRepo}) {(!string.IsNullOrWhiteSpace(Config.UpstreamBranch) ? $" *branch=``{Config.UpstreamBranch}``*" :"")}";
 
+         var statusMsg = "";
+         if (!Config.HidePRStatus)
+            statusMsg = $"\r\n" +
+               $"<details>" +
+               $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
+               $"<p>\r\n\r\n```\r\n{status}```\r\n</p>" +
+               $"</details>\r\n";
+
+         var credits = "";
+         if (!Config.HideCredits)
+            credits = $"<sub>Automatically created by " +
+               $"<a href=\"https://github.com/litetex/pull-detached-remote\">" +
+               $"<img src=\"https://raw.githubusercontent.com/litetex/PullDetachedRemote/develop/logo.png\" height=15></img>" +
+               $" {nameof(PullDetachedRemote)}</a></sub>";
+
          Log.Info($"Updating PR[ID='{PullRequest.Id}']");
 
          PullRequest = RepoClient.PullRequest.Update(Repo.Id, PullRequest.Number, new PullRequestUpdate()
          {
-            Body = $"{createdPRMessage}{beforeStatus}" +
-               $"\r\n" +
-               $"<details>" +
-               $"<summary class='automated-pullrequest-status'><b>Status [updated at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC]</b></summary>" +
-               $"<p>\r\n\r\n```\r\n{status}```\r\n</p>" +
-               $"</details>\r\n" +
-               $"{afterStatus}",
+            Body = $"{createdPRMessage}{beforeStatus}{statusMsg}{credits}{afterStatus}",
          }).Result;
          Log.Info($"Updated PR[ID='{PullRequest.Id}']");
       }

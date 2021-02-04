@@ -150,5 +150,18 @@ namespace PullDetachedRemote.Config
       [YamlIgnore]
       public string DetachedCredsPassword { get; set; } = null;
 
+
+      /// <summary>
+      /// Disables the status in the pr
+      /// </summary>
+      [YamlIgnore]
+      public bool HidePRStatus { get; set; } = false;
+
+      /// <summary>
+      /// Disables the credits
+      /// </summary>
+      [YamlIgnore]
+      public bool HideCredits { get; set; } = false;
+
    }
 }
