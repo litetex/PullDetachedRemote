@@ -110,6 +110,12 @@ namespace PullDetachedRemote.CMD
       public string UpstreamBranch { get; set; }
 
       /// <summary>
+      /// <see cref="Config.Configuration.IgnoreUpstreamRepoProtocolInOriginUpdateBranch"/>
+      /// </summary>
+      [Option("ignoreprotocol")]
+      public bool IgnoreUpstreamRepoProtocolInOriginUpdateBranch { get; set; }
+
+      /// <summary>
       /// <see cref="Config.Configuration.OriginUpdateBranch"/>
       /// </summary>
       [Option("nameoforiginupdatebranch")]

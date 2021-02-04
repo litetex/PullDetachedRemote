@@ -16,9 +16,9 @@ namespace PullDetachedRemote
 
       public bool UncriticalErrors { get; set; } = false;
 
-      public bool PRBaseNotBeforeTarget { get; set; } = false;
+      public bool NoNewCommitsOnBaseBranch { get; set; } = false;
 
-      public bool CreatedBranch { get; set; } = false;
+      public bool CreatedNewBranch { get; set; } = false;
 
       public bool HasUpstreamUpdates { get; set; } = false;
 

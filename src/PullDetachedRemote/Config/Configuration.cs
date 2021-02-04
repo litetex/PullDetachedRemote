@@ -86,6 +86,14 @@ namespace PullDetachedRemote.Config
       public string OriginUpdateBranch { get; set; }
 
       /// <summary>
+      /// Ignores the protocol (http/https/...) when generating the <see cref="OriginUpdateBranch"/>
+      /// </summary>
+      /// <remarks>
+      /// Optional;
+      /// </remarks>
+      public bool IgnoreUpstreamRepoProtocolInOriginUpdateBranch { get; set; } = false;
+
+      /// <summary>
       /// GITHUB_TOKEN <para/>
       /// used for:
       /// <list type="bullet">
@@ -141,6 +149,19 @@ namespace PullDetachedRemote.Config
       /// </remarks>
       [YamlIgnore]
       public string DetachedCredsPassword { get; set; } = null;
+
+
+      /// <summary>
+      /// Disables the status in the pr
+      /// </summary>
+      [YamlIgnore]
+      public bool HidePRStatus { get; set; } = false;
+
+      /// <summary>
+      /// Disables the credits
+      /// </summary>
+      [YamlIgnore]
+      public bool HideCredits { get; set; } = false;
 
    }
 }

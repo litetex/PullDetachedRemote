@@ -36,47 +36,53 @@ namespace PullDetachedRemote
             Serilog.Log.CloseAndFlush();
          };
 
-//#if !DEBUG
+         //#if !DEBUG
          try
          {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-//#endif
-         Parser.Default.ParseArguments<CmdOption>(args)
-                     .WithParsed((opt) =>
-                     {
-                        var starter = new StartUp(opt);
-                        starter.Start();
-                     })
-                     .WithNotParsed((ex) =>
-                     {
-                        if (ex.All(err =>
-                                new ErrorType[]
-                                {
+            //#endif
+            var parser = new Parser(settings =>
+            {
+               settings.IgnoreUnknownArguments = true;
+               settings.CaseSensitive = false;
+               settings.CaseInsensitiveEnumValues = true;
+            });
+            parser.ParseArguments<CmdOption>(args)
+                        .WithParsed((opt) =>
+                        {
+                           var starter = new StartUp(opt);
+                           starter.Start();
+                        })
+                        .WithNotParsed((ex) =>
+                        {
+                           if (ex.All(err =>
+                                   new ErrorType[]
+                                   {
                                  ErrorType.HelpRequestedError,
                                  ErrorType.HelpVerbRequestedError
-                                }.Contains(err.Tag))
-                          )
-                           return;
+                                   }.Contains(err.Tag))
+                             )
+                              return;
 
-                        foreach (var error in ex)
-                           Log.Error($"Failed to parse: {error.Tag}");
+                           foreach (var error in ex)
+                              Log.Error($"Failed to parse: {error.Tag}");
 
-                        Log.Fatal("Failure processing args");
-                     });
-//#if !DEBUG
+                           Log.Fatal("Failure processing args");
+                        });
+            //#if !DEBUG
          }
          catch (Exception ex)
          {
             Log.Fatal(ex);
          }
-//#endif
+         //#endif
       }
 
       private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs ev)
       {
          try
-         {  
+         {
             Log.Fatal("Detected UnhandledException");
             if (ev.ExceptionObject is Exception ex)
                Log.Fatal("Run into unhandled error", ex);

@@ -1,11 +1,11 @@
-name: Master CI
+name: Release
 
 on:
   push:
     branches: master
 
 jobs:
-  build:
+  build_check:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,17 +18,25 @@ jobs:
       
     - name: Install dependencies
       run: dotnet restore
+      working-directory: src
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+      working-directory: src
       
     - name: Test
       run: dotnet test --no-restore --verbosity normal
-     
-    - name: Publish
-      working-directory: PullDetachedRemote
-      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
-        
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [build_check]
+    outputs:
+       upload_url: ${{ steps.create_draft.outputs.upload_url }}
+       version: ${{ steps.create_version.outputs.version }}
+       version_minor: ${{ steps.create_version.outputs.version_minor }}
+       version_major: ${{ steps.create_version.outputs.version_major }}
+
+    steps:
     - name: Release - Create Draft for Release
       id: create_draft
       uses: release-drafter/release-drafter@v5
@@ -42,19 +50,35 @@ jobs:
         echo "::set-output name=version::$(echo ${tag_name:1})"
         echo "::set-output name=version_minor::$(echo ${tag_name:1:3})"
         echo "::set-output name=version_major::$(echo ${tag_name:1:1})"
+
+  build_publish_docker:
+    runs-on: ubuntu-latest
+    needs: [create_release]
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    
+    - name: Publish
+      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None -p:Version=${{ needs.create_release.outputs.version }} 
+      working-directory: src/PullDetachedRemote
         
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1.0.2
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_draft.outputs.upload_url }} 
-        asset_path: ./PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/PullDetachedRemote
-        asset_name: PullDetachedRemote
+        upload_url: ${{ needs.create_release.outputs.upload_url }} 
+        asset_path: ./src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/PullDetachedRemote
+        asset_name: PullDetachedRemote-alpine
         asset_content_type: application/octet-stream
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
@@ -69,5 +93,5 @@ jobs:
         name: litetex/pulldetachedremote
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        tags: "latest,master-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }},${{ steps.create_version.outputs.version }},${{ steps.create_version.outputs.version_minor }},${{ steps.create_version.outputs.version_major }}"
-        workdir: PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+        tags: "latest,master-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }},${{ needs.create_release.outputs.version }},${{ needs.create_release.outputs.version_minor }},${{ needs.create_release.outputs.version_major }}"
+        workdir: src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
