@@ -96,3 +96,15 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "latest,master-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }},${{ needs.create_release.outputs.version }},${{ needs.create_release.outputs.version_minor }},${{ needs.create_release.outputs.version_major }}"
         workdir: src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+
+  after_release:
+    runs-on: ubuntu-latest
+    needs: [build_publish_docker]
+    steps:
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        destination_branch: "develop"
+        pr_title: "Sync back"
+        pr_body: "An automated PR to sync changes back"
