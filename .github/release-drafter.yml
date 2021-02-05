@@ -15,6 +15,10 @@ version-resolver:
       - 'patch'
   default: patch
 template: |
+  [![https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=$RESOLVED_VERSION](https://img.shields.io/badge/docker-$RESOLVED_VERSION-%232684ff)](https://hub.docker.com/r/litetex/pulldetachedremote/tags?name=$RESOLVED_VERSION)
+
+  ``docker pull litetex/pulldetachedremote:$RESOLVED_VERSION``
+  
   ## Changes
   
   $CHANGES
