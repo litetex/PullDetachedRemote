@@ -216,11 +216,11 @@ namespace PullDetachedRemote.Workflow
 
       public bool CheckoutOriginUpdateBranch()
       {
-         OriginUpdateBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == Config.OriginUpdateBranch);
+         OriginUpdateBranch = Repo.Branches.FirstOrDefault(x => x.FriendlyName == Config.UpdateBranch);
          if (OriginUpdateBranch == null)
          {
-            Log.Info($"Creating origin-update branch '{Config.OriginUpdateBranch}' from '{UpstreamBranch.FriendlyName}'");
-            OriginUpdateBranch = Repo.CreateBranch(Config.OriginUpdateBranch, UpstreamBranch.Tip);
+            Log.Info($"Creating origin-update branch '{Config.UpdateBranch}' from '{UpstreamBranch.FriendlyName}'");
+            OriginUpdateBranch = Repo.CreateBranch(Config.UpdateBranch, UpstreamBranch.Tip);
             Log.Info($"Created origin-update branch '{OriginUpdateBranch.FriendlyName}'[LatestCommit='{UpstreamBranch.Tip}']");
 
             return true;

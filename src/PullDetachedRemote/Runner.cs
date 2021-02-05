@@ -228,7 +228,7 @@ namespace PullDetachedRemote
             Log.Info($"Got default upstream-branch[name='{Config.UpstreamBranch}'] of '{Config.UpstreamRepo}'");
          }
 
-         if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
+         if (string.IsNullOrWhiteSpace(Config.UpdateBranch))
          {
             var repoName = Config.UpstreamRepo;
             if (repoName.StartsWith("https:") || repoName.StartsWith("http:"))
@@ -238,14 +238,14 @@ namespace PullDetachedRemote
                   repoName = newRepoName;
             }
 
-            Config.OriginUpdateBranch = $"upstreamupdate/{repoName}/{Config.UpstreamBranch}";
+            Config.UpdateBranch = $"upstreamupdate/{repoName}/{Config.UpstreamBranch}";
          }
 
-         Config.OriginUpdateBranch = GitBranchNormalizer.Fix(Config.OriginUpdateBranch);
-         if (string.IsNullOrWhiteSpace(Config.OriginUpdateBranch))
-            throw new ArgumentException($"{nameof(Config.OriginUpdateBranch)}[='{Config.OriginUpdateBranch}'] is invalid");
+         Config.UpdateBranch = GitBranchNormalizer.Fix(Config.UpdateBranch);
+         if (string.IsNullOrWhiteSpace(Config.UpdateBranch))
+            throw new ArgumentException($"{nameof(Config.UpdateBranch)}[='{Config.UpdateBranch}'] is invalid");
 
-         Log.Info($"{nameof(Config.OriginUpdateBranch)} is '{Config.OriginUpdateBranch}'");
+         Log.Info($"{nameof(Config.UpdateBranch)} is '{Config.UpdateBranch}'");
       }
 
 
