@@ -83,15 +83,15 @@ namespace PullDetachedRemote.Config
       /// <remarks>
       /// Optional; default is a auto generated name from the upstreamRepo + Branch
       /// </remarks>
-      public string OriginUpdateBranch { get; set; }
+      public string UpdateBranch { get; set; }
 
       /// <summary>
-      /// Ignores the protocol (http/https/...) when generating the <see cref="OriginUpdateBranch"/>
+      /// Ignores the protocol (http/https) when generating the <see cref="UpdateBranch"/>
       /// </summary>
       /// <remarks>
       /// Optional;
       /// </remarks>
-      public bool IgnoreUpstreamRepoProtocolInOriginUpdateBranch { get; set; } = false;
+      public bool IgnoreUpstreamRepoProtocolInUpdateBranch { get; set; } = false;
 
       /// <summary>
       /// GITHUB_TOKEN <para/>
