@@ -145,8 +145,9 @@ namespace PullDetachedRemote.Workflow
       // NOTE: Not optimized
       public string GetDefaultUpstreamBranch()
       {
-         var tempFilesystemStructure = Path.GetTempFileName();
-         File.Delete(tempFilesystemStructure);
+         var tempFilesystemStructure = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+         if(File.Exists(tempFilesystemStructure))
+            File.Delete(tempFilesystemStructure);
          
          Log.Info($"Getting default branch of upstream; Using templocation='{tempFilesystemStructure}'");
          Directory.CreateDirectory(tempFilesystemStructure);
