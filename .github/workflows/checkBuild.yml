@@ -37,11 +37,19 @@ jobs:
       working-directory: src
      
     - name: Publish
-      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
+      run: dotnet publish -c Release -r alpine-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
       working-directory: src/PullDetachedRemote
+
+    - name: Upload built artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: archive
+        path: |
+          src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
+        if-no-files-found: error
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
@@ -59,4 +67,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "develop,develop-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }}"
-        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
+        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/

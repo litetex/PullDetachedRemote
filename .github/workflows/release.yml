@@ -65,7 +65,7 @@ jobs:
         dotnet-version: 6.x
     
     - name: Publish
-      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None -p:Version=${{ needs.create_release.outputs.version }} 
+      run: dotnet publish -c Release -r alpine-x64 -p:PublishSingleFile=true -p:DebugType=None -p:Version=${{ needs.create_release.outputs.version }} 
       working-directory: src/PullDetachedRemote
         
     - name: Upload Release Asset
@@ -74,12 +74,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }} 
-        asset_path: ./src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/PullDetachedRemote
+        asset_path: ./src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/PullDetachedRemote
         asset_name: PullDetachedRemote-alpine
         asset_content_type: application/octet-stream
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
@@ -95,7 +95,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "latest,master-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }},${{ needs.create_release.outputs.version }},${{ needs.create_release.outputs.version_minor }},${{ needs.create_release.outputs.version_major }}"
-        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
+        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
 
   after_release:
     runs-on: ubuntu-latest
