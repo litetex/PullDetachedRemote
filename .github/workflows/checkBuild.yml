@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: 6.x
       
     - name: Install dependencies
       run: dotnet restore
@@ -37,17 +37,25 @@ jobs:
       working-directory: src
      
     - name: Publish
-      run: dotnet publish -c Release -r alpine.3.9-x64 -p:PublishSingleFile=true -p:DebugType=None
+      run: dotnet publish -c Release -r alpine-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
       working-directory: src/PullDetachedRemote
+
+    - name: Upload built artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: archive
+        path: |
+          src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
+        if-no-files-found: error
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
       run: |
-       echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-       echo "::set-output name=build_datetime::$(date -u +%Y%m%d-%H%M)"
+       echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+       echo "build_datetime=$(date -u +%Y%m%d-%H%M)" >> $GITHUB_OUTPUT
           
     - name: Build Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
@@ -59,4 +67,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "develop,develop-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }}"
-        workdir: src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine-x64/publish/
