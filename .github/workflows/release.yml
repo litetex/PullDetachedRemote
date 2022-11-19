@@ -65,7 +65,7 @@ jobs:
         dotnet-version: 6.x
     
     - name: Publish
-      run: dotnet publish -c Release -r alpine-x64 -p:PublishSingleFile=true -p:DebugType=None -p:Version=${{ needs.create_release.outputs.version }} 
+      run: dotnet publish -c Release -r alpine-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true -p:Version=${{ needs.create_release.outputs.version }} 
       working-directory: src/PullDetachedRemote
         
     - name: Upload Release Asset
