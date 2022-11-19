@@ -80,7 +80,7 @@ namespace PullDetachedRemote.Workflow
          };
          Log.Info($"Created GitHubClient['{phv}']");
 
-         var checkConTask = client.Miscellaneous.GetRateLimits();
+         var checkConTask = client.RateLimit.GetRateLimits();
          if (!checkConTask.Wait((int)TimeSpan.FromSeconds(10).TotalMilliseconds, ct))
             throw new TimeoutException("GitHubClient-ConCheck timed out");
 
