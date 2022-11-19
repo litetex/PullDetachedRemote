@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     
     <!-- https://github.com/libgit2/libgit2sharp/issues/1754 -->
     <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
