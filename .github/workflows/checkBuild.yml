@@ -46,8 +46,8 @@ jobs:
     - name: Generate tag vars
       id: tagvars
       run: |
-       echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-       echo "::set-output name=build_datetime::$(date -u +%Y%m%d-%H%M)"
+       echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+       echo "build_datetime=$(date -u +%Y%m%d-%H%M)" >> $GITHUB_OUTPUT
           
     - name: Build Dockerimage and publish to Registry
       # Let's call this Publish-... when it actually builds and publishes... 
