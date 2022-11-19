@@ -19,10 +19,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: 6.x
       
     - name: Install dependencies
       run: dotnet restore
@@ -41,7 +41,7 @@ jobs:
       working-directory: src/PullDetachedRemote
         
     - name: Copy Dockerfile into build output
-      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+      run: cp build/Dockerfile src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
       
     - name: Generate tag vars
       id: tagvars
@@ -59,4 +59,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tags: "develop,develop-${{ steps.tagvars.outputs.sha_short }}-${{ steps.tagvars.outputs.build_datetime }}"
-        workdir: src/PullDetachedRemote/bin/Release/netcoreapp3.1/alpine.3.9-x64/publish/
+        workdir: src/PullDetachedRemote/bin/Release/net6.0/alpine.3.9-x64/publish/
