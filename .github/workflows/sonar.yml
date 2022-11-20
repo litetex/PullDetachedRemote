@@ -29,11 +29,6 @@ jobs:
         with:
           dotnet-version: 6.x
 
-      # Fixes 
-      # - https://github.com/actions/setup-dotnet/issues/155
-      # - https://github.com/actions/virtual-environments/issues/1090
-      - run: dotnet nuget locals all --clear
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
